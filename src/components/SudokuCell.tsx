@@ -23,7 +23,7 @@ const SudokuCell = React.memo(
 
     return (
       <input
-        type="text"
+        type="tel"
         value={value}
         maxLength={1}
         onChange={(e) => {
