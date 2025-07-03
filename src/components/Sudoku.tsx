@@ -225,7 +225,14 @@ export function Sudoku({ roomId }: Props) {
       </Stack>
 
       <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid container spacing={0.5} sx={{ maxWidth: 360, margin: "0 auto" }}>
+        <Grid
+          container
+          spacing={0.5}
+          sx={{
+            maxWidth: activeBoard === "boardA" ? 360 : 270,
+            margin: "0 auto",
+          }}
+        >
           <Box
             sx={{
               display: "grid",
@@ -279,7 +286,14 @@ export function Sudoku({ roomId }: Props) {
       )}
       <Divider />
       <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid container spacing={0.5} sx={{ maxWidth: 360, margin: "0 auto" }}>
+        <Grid
+          container
+          spacing={0.5}
+          sx={{
+            maxWidth: activeBoard === "boardB" ? 360 : 270,
+            margin: "0 auto",
+          }}
+        >
           <Box
             sx={{
               display: "grid",

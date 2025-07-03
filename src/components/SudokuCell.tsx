@@ -37,8 +37,10 @@ const SudokuCell = React.memo(
           width: "100%",
           aspectRatio: "1",
           textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "clamp(14px, 2.5vw, 20px)",
+          fontWeight: 500,
+          fontSize: isOwner
+            ? "clamp(14px, 2.5vw, 20px)"
+            : "clamp(14px, 2.5vw, 14px)",
           border: "1px solid #ccc",
           borderRight: thickRight ? "2px solid #000" : "1px solid #ccc",
           borderBottom: thickBottom ? "2px solid #000" : "1px solid #ccc",
@@ -49,6 +51,7 @@ const SudokuCell = React.memo(
               ? "#efe7bc"
               : "transparent",
           color: isPreFilled ? "#000000" : isOwner ? "#000000" : "#efe7bc",
+          fontFamily: "Kanit",
         }}
         // disabled={isPreFilled || !isOwner}
       />
