@@ -26,7 +26,13 @@ const SudokuCell = React.memo(
         type="text"
         value={value}
         maxLength={1}
-        onChange={handleInput}
+        onChange={(e) => {
+          if (isPreFilled || !isOwner) {
+            e.preventDefault();
+            return;
+          }
+          handleInput(e);
+        }}
         style={{
           width: "100%",
           aspectRatio: "1",
@@ -44,7 +50,7 @@ const SudokuCell = React.memo(
               : "transparent",
           color: isPreFilled ? "#000000" : isOwner ? "#000000" : "#efe7bc",
         }}
-        disabled={isPreFilled || !isOwner}
+        // disabled={isPreFilled || !isOwner}
       />
     );
   }

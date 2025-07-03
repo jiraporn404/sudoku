@@ -106,7 +106,6 @@ function RouteComponent() {
             sx={{
               display: "grid",
               gridTemplateColumns: "repeat(9, 1fr)",
-              border: 2,
             }}
           >
             {board?.map((row, rowIndex) =>
