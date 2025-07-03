@@ -38,7 +38,7 @@ const SudokuCell = React.memo(
           aspectRatio: "1",
           textAlign: "center",
           fontWeight: "bold",
-          fontSize: "clamp(14px, 2.5vw, 24px)",
+          fontSize: "clamp(14px, 2.5vw, 20px)",
           border: "1px solid #ccc",
           borderRight: thickRight ? "2px solid #000" : "1px solid #ccc",
           borderBottom: thickBottom ? "2px solid #000" : "1px solid #ccc",

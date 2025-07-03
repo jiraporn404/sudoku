@@ -20,23 +20,28 @@ function RouteComponent() {
   return (
     <Container>
       <Stack mt={2}>
-        <Button
-          variant="contained"
-          onClick={() => navigate({ to: "/singlePlay" })}
-          sx={{ color: "white" }}
-        >
-          Single Player
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={async () => {
-            await createRoom(roomId);
-            await refetch();
-          }}
-        >
-          Create Room
-        </Button>
+        <Stack direction="row">
+          <Button
+            variant="contained"
+            onClick={() => navigate({ to: "/singlePlay" })}
+            sx={{ color: "white" }}
+            fullWidth
+          >
+            Single Player
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={async () => {
+              await createRoom(roomId);
+              await refetch();
+            }}
+            fullWidth
+          >
+            Create Room
+          </Button>
+        </Stack>
+
         {rooms && (
           <Stack>
             {Object.keys(rooms).map((roomId) => (
