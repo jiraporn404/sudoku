@@ -9,7 +9,13 @@ import SudokuCell from "../components/SudokuCell";
 function RouteComponent() {
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
+  const [solution, setSolution] = useState<string[]>([]);
   const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
+  const [helpCount, setHelpCount] = useState<number>(0);
 
   const generateNewBoard = async () => {
     const newBoard = await generateNewBoardData();
@@ -20,7 +26,9 @@ function RouteComponent() {
       JSON.stringify({
         board: newBoard.puzzle,
         difficulty: newBoard.difficulty,
+        solution: newBoard.solution,
         activeBoard: "",
+        helpCount: 3,
       })
     );
   };
@@ -36,6 +44,8 @@ function RouteComponent() {
       JSON.stringify({
         board: newBoard,
         difficulty: difficulty,
+        solution: solution,
+        helpCount: helpCount,
       })
     );
   };
@@ -87,20 +97,48 @@ function RouteComponent() {
   useEffect(() => {
     const storageBoard = localStorage.getItem("board");
     if (storageBoard) {
-      const { board, difficulty } = JSON.parse(storageBoard);
+      const { board, difficulty, solution, helpCount } =
+        JSON.parse(storageBoard);
       setBoard(board);
       setDifficulty(difficulty);
+      setSolution(solution);
+      setHelpCount(helpCount);
     } else {
       generateNewBoard();
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest("[data-sudoku-board]")) {
+        setSelectedCell(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <Stack>
       <Box>
-        <Typography variant="body1">Level: {difficulty}</Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            fontFamily: "Luckiest Guy",
+            letterSpacing: 8,
+            bgcolor: "secondary.main",
+            color: "white",
+            p: 1,
+          }}
+        >
+          Level: {difficulty}
+        </Typography>
       </Box>
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <Box data-sudoku-board sx={{ display: "flex", justifyContent: "center" }}>
         <Grid container spacing={0.5} sx={{ maxWidth: 360, margin: "0 auto" }}>
           <Box
             sx={{
@@ -120,6 +158,12 @@ function RouteComponent() {
                     }
                     isPreFilled={cell.isPreFilled}
                     isOwner={true}
+                    onSelect={() =>
+                      setSelectedCell({
+                        row: rowIndex,
+                        col: colIndex,
+                      })
+                    }
                   />
                 </Box>
               ))
@@ -143,6 +187,23 @@ function RouteComponent() {
           onClick={() => handleCheck()}
         >
           Check
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          disabled={helpCount === 0 || !selectedCell}
+          onClick={() => {
+            if (selectedCell && helpCount > 0) {
+              handleChange(
+                selectedCell.row,
+                selectedCell.col,
+                solution[selectedCell.row][selectedCell.col].toString()
+              );
+              setHelpCount(helpCount - 1);
+            }
+          }}
+        >
+          Help ({helpCount})
         </Button>
       </Box>
       {isValid !== null && (

@@ -18,12 +18,12 @@ type SudokuBoard = {
   difficulty: string;
 };
 
-// Enhanced board structure with solution and user answers
 type BoardData = {
-  puzzle: Board; // The original puzzle with prefilled cells
-  solution: number[][]; // The complete solution from API
-  userAnswers: Board; // User's current answers
-  difficulty: string; // Difficulty level from API
+  puzzle: Board;
+  solution: number[][];
+  userAnswers: Board;
+  difficulty: string;
+  helpCount: number;
 };
 
 type RoomData = {
@@ -100,6 +100,7 @@ export const generateNewBoardData = async (): Promise<BoardData> => {
       solution: apiBoard.solution,
       userAnswers,
       difficulty: apiBoard.difficulty,
+      helpCount: 3,
     };
   } catch (error) {
     console.error("Error generating new board:", error);
@@ -112,6 +113,7 @@ export const generateNewBoardData = async (): Promise<BoardData> => {
         .map(() => Array(9).fill(0)),
       userAnswers: createUserAnswersBoard(emptyPuzzle),
       difficulty: "unknown",
+      helpCount: 3,
     };
   }
 };

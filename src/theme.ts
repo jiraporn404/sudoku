@@ -8,13 +8,13 @@ export const theme = createTheme({
       contrastText: "#000000",
     },
     secondary: {
-      main: "#ffa384",
+      main: "#E5666F",
       light: "#efe7bc",
       contrastText: "#000000",
     },
     success: {
-      main: "#59981a",
-      light: "#ecf87f",
+      main: "#82D613",
+      light: "#CDEB51",
     },
     text: {
       primary: "#363636",

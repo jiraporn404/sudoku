@@ -15,8 +15,6 @@ function RouteComponent() {
     queryFn: listRooms,
   });
 
-  console.log(rooms);
-
   return (
     <Container>
       <Stack mt={2}>
@@ -36,6 +34,7 @@ function RouteComponent() {
               await createRoom(roomId);
               await refetch();
             }}
+            sx={{ color: "white" }}
             fullWidth
           >
             Create Room
@@ -58,8 +57,8 @@ function RouteComponent() {
                 }}
               >
                 <Typography component={"span"} variant="body1">
-                  Room ID: {roomId}{" "}
-                </Typography>{" "}
+                  ID: {roomId}
+                </Typography>
                 <Stack direction="row" spacing={1}>
                   <Button
                     variant="contained"
@@ -76,7 +75,7 @@ function RouteComponent() {
                     Join
                   </Button>{" "}
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     color="error"
                     onClick={async () => {
                       await deleteRoom(roomId);

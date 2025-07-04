@@ -5,12 +5,21 @@ type SudokuCellProps = {
   row: number;
   col: number;
   onChange: (row: number, col: number, value: string) => void;
+  onSelect?: () => void;
   isPreFilled: boolean;
   isOwner: boolean;
 };
 
 const SudokuCell = React.memo(
-  ({ value, row, col, onChange, isPreFilled, isOwner }: SudokuCellProps) => {
+  ({
+    value,
+    row,
+    col,
+    onChange,
+    isPreFilled,
+    isOwner,
+    onSelect,
+  }: SudokuCellProps) => {
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       if (/^[1-9]?$/.test(val)) {
@@ -33,14 +42,16 @@ const SudokuCell = React.memo(
           }
           handleInput(e);
         }}
+        onClick={onSelect}
         style={{
           width: "100%",
+          height: "100%",
           aspectRatio: "1",
           textAlign: "center",
           fontWeight: 500,
           fontSize: isOwner
-            ? "clamp(14px, 2.5vw, 20px)"
-            : "clamp(14px, 2.5vw, 14px)",
+            ? "clamp(16px, 2.5vw, 18px)"
+            : "clamp(12px, 2.5vw, 14px)",
           border: "1px solid #ccc",
           borderRight: thickRight ? "2px solid #000" : "1px solid #ccc",
           borderBottom: thickBottom ? "2px solid #000" : "1px solid #ccc",
