@@ -5,11 +5,13 @@ import { generateNewBoardData } from "../services/sudokuService";
 import { Button, Grid, Stack, Typography } from "@mui/material";
 import { Box } from "@mui/material";
 import SudokuCell from "../components/SudokuCell";
+import { useMutation } from "@tanstack/react-query";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
-  const [solution, setSolution] = useState<string[]>([]);
+  const [solution, setSolution] = useState<number[][]>([]);
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [selectedCell, setSelectedCell] = useState<{
     row: number;
@@ -17,10 +19,17 @@ function RouteComponent() {
   } | null>(null);
   const [helpCount, setHelpCount] = useState<number>(0);
 
+  const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
+    mutationFn: generateNewBoardData,
+  });
+
   const generateNewBoard = async () => {
-    const newBoard = await generateNewBoardData();
+    const newBoard = await generateNewBoardDataAsync();
+    setIsValid(null);
     setBoard(newBoard.puzzle);
     setDifficulty(newBoard.difficulty);
+    setSolution(newBoard.solution);
+    setHelpCount(3);
     localStorage.setItem(
       "board",
       JSON.stringify({
@@ -123,99 +132,145 @@ function RouteComponent() {
   }, []);
 
   return (
-    <Stack>
-      <Box>
-        <Typography
-          variant="body1"
-          sx={{
-            fontFamily: "Luckiest Guy",
-            letterSpacing: 8,
-            bgcolor: "secondary.main",
-            color: "white",
-            p: 1,
-          }}
-        >
-          Level: {difficulty}
-        </Typography>
-      </Box>
-      <Box data-sudoku-board sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid container spacing={0.5} sx={{ maxWidth: 360, margin: "0 auto" }}>
-          <Box
+    <>
+      <LoadingOverlay open={isPending} />
+      <Stack>
+        <Box>
+          <Typography
+            variant="body1"
             sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(9, 1fr)",
+              fontFamily: "Luckiest Guy",
+              letterSpacing: 8,
+              bgcolor:
+                difficulty === "Easy"
+                  ? "#55E485"
+                  : difficulty === "Medium"
+                    ? "#DE9542"
+                    : "secondary.main",
+              color: "white",
+              p: 1,
             }}
           >
-            {board?.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <Box key={`${rowIndex}-${colIndex}`}>
-                  <SudokuCell
-                    value={cell.value}
-                    row={rowIndex}
-                    col={colIndex}
-                    onChange={(row, col, value) =>
-                      handleChange(row, col, value)
-                    }
-                    isPreFilled={cell.isPreFilled}
-                    isOwner={true}
-                    onSelect={() =>
-                      setSelectedCell({
-                        row: rowIndex,
-                        col: colIndex,
-                      })
-                    }
-                  />
-                </Box>
-              ))
-            )}
-          </Box>
-        </Grid>
-      </Box>
-      <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-        <Button
-          variant="contained"
-          color="warning"
-          sx={{ width: "fit-content", color: "white" }}
-          onClick={() => generateNewBoard()}
+            Level: {difficulty}
+          </Typography>
+        </Box>
+        <Box
+          data-sudoku-board
+          sx={{ display: "flex", justifyContent: "center" }}
         >
-          New Game
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          sx={{ width: "fit-content" }}
-          onClick={() => handleCheck()}
-        >
-          Check
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          disabled={helpCount === 0 || !selectedCell}
-          onClick={() => {
-            if (selectedCell && helpCount > 0) {
-              handleChange(
-                selectedCell.row,
-                selectedCell.col,
-                solution[selectedCell.row][selectedCell.col].toString()
-              );
-              setHelpCount(helpCount - 1);
-            }
-          }}
-        >
-          Help ({helpCount})
-        </Button>
-      </Box>
-      {isValid !== null && (
-        <Typography
-          variant="subtitle2"
-          sx={{ mt: 2 }}
-          color={isValid ? "green" : "error"}
-        >
-          {isValid ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
-        </Typography>
-      )}
-    </Stack>
+          <Grid
+            container
+            spacing={0.5}
+            sx={{ maxWidth: 360, margin: "0 auto" }}
+          >
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(9, 1fr)",
+              }}
+            >
+              {board?.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                  <Box key={`${rowIndex}-${colIndex}`}>
+                    <SudokuCell
+                      value={cell.value}
+                      row={rowIndex}
+                      col={colIndex}
+                      onChange={(row, col, value) =>
+                        handleChange(row, col, value)
+                      }
+                      isPreFilled={cell.isPreFilled}
+                      isOwner={true}
+                      onSelect={() =>
+                        setSelectedCell({
+                          row: rowIndex,
+                          col: colIndex,
+                        })
+                      }
+                    />
+                  </Box>
+                ))
+              )}
+            </Box>
+          </Grid>
+        </Box>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}>
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
+            <Box
+              key={num}
+              sx={{ width: "100%", height: "100%", border: "1px solid #ccc" }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: "center",
+                  fontWeight: 500,
+                }}
+              >
+                {num}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "text.secondary",
+                }}
+              >
+                {board.reduce((acc, row) => {
+                  const count = row.filter((cell) => cell.value === num).length;
+                  return acc + count;
+                }, 0)}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+          <Button
+            variant="contained"
+            color="warning"
+            sx={{ width: "fit-content", color: "white" }}
+            onClick={() => generateNewBoard()}
+          >
+            New Game
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ width: "fit-content" }}
+            onClick={() => handleCheck()}
+          >
+            Check
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            disabled={helpCount === 0 || !selectedCell}
+            onClick={() => {
+              if (selectedCell && helpCount > 0) {
+                handleChange(
+                  selectedCell.row,
+                  selectedCell.col,
+                  solution[selectedCell.row][selectedCell.col].toString()
+                );
+                setHelpCount(helpCount - 1);
+              }
+            }}
+          >
+            Help ({helpCount})
+          </Button>
+        </Box>
+        {isValid !== null && (
+          <Typography
+            variant="subtitle2"
+            sx={{ mt: 2 }}
+            color={isValid ? "green" : "error"}
+          >
+            {isValid ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
+          </Typography>
+        )}
+      </Stack>
+    </>
   );
 }
 

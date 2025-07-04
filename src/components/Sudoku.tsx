@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import SudokuCell from "./SudokuCell";
 import {
   generateNewBoardForRoom,
@@ -16,6 +16,7 @@ import {
   updateUserAnswer,
 } from "../services/sudokuService";
 import { emptyBoard, type Cell } from "../utils/generateData";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 type Props = {
   roomId: string;
@@ -60,13 +61,17 @@ export function Sudoku({ roomId }: Props) {
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
   );
 
-  const { data, refetch } = useQuery({
+  const { data, refetch, isLoading } = useQuery({
     queryKey: ["board"],
     queryFn: async () => {
       const response = await getRoomData(roomId);
       return response;
     },
     enabled: !!roomId,
+  });
+
+  const { mutateAsync: generateNewBoardForRoomAsync, isPending } = useMutation({
+    mutationFn: generateNewBoardForRoom,
   });
 
   // Debounced API call function
@@ -191,9 +196,9 @@ export function Sudoku({ roomId }: Props) {
     }
   };
 
-  const handleReset = () => {
-    generateNewBoardForRoom(roomId);
-    refetch();
+  const handleReset = async () => {
+    await generateNewBoardForRoomAsync(roomId);
+    await refetch();
     setIsValidA(null);
     setIsValidB(null);
   };
@@ -232,226 +237,316 @@ export function Sudoku({ roomId }: Props) {
   }, []);
 
   return (
-    <Stack>
-      <Box>
-        <Typography
-          variant="body1"
-          sx={{
-            fontFamily: "Luckiest Guy",
-            letterSpacing: 8,
-            bgcolor: "secondary.main",
-            color: "white",
-            p: 1,
-          }}
-        >
-          Level: {data?.boardA.difficulty}
-        </Typography>
-      </Box>
-
-      <Stack direction="row" justifyContent="center">
-        <Button
-          variant="contained"
-          color="warning"
-          sx={{ mt: 2 }}
-          onClick={handleReset}
-        >
-          New Game
-        </Button>{" "}
-        <ButtonGroup sx={{ mb: 2 }}>
-          <Button
-            value="boardA"
-            onClick={() => {
-              setActiveBoard("boardA");
-              localStorage.setItem("activeBoard", "boardA");
+    <>
+      <LoadingOverlay open={isLoading || isPending} />
+      <Stack>
+        <Box>
+          <Typography
+            variant="body1"
+            sx={{
+              fontFamily: "Luckiest Guy",
+              letterSpacing: 8,
+              bgcolor: "secondary.main",
+              color: "white",
+              p: 1,
             }}
-            variant={activeBoard === "boardA" ? "contained" : "outlined"}
-            sx={{ color: activeBoard === "boardA" ? "white" : "text.primary" }}
           >
-            Board A
-          </Button>
+            Level: {data?.boardA.difficulty}
+          </Typography>
+        </Box>
+        <Stack direction="row" justifyContent="center">
           <Button
-            value="boardB"
-            onClick={() => {
-              setActiveBoard("boardB");
-              localStorage.setItem("activeBoard", "boardB");
-            }}
-            variant={activeBoard === "boardB" ? "contained" : "outlined"}
-            sx={{ color: activeBoard === "boardB" ? "white" : "text.primary" }}
+            variant="contained"
+            color="warning"
+            sx={{ mt: 2 }}
+            onClick={handleReset}
           >
-            Board B
+            New Game
           </Button>
-        </ButtonGroup>
+          <ButtonGroup sx={{ mb: 2 }}>
+            <Button
+              value="boardA"
+              onClick={() => {
+                setActiveBoard("boardA");
+                localStorage.setItem("activeBoard", "boardA");
+              }}
+              variant={activeBoard === "boardA" ? "contained" : "outlined"}
+              sx={{
+                color: activeBoard === "boardA" ? "white" : "text.primary",
+              }}
+            >
+              Board A
+            </Button>
+            <Button
+              value="boardB"
+              onClick={() => {
+                setActiveBoard("boardB");
+                localStorage.setItem("activeBoard", "boardB");
+              }}
+              variant={activeBoard === "boardB" ? "contained" : "outlined"}
+              sx={{
+                color: activeBoard === "boardB" ? "white" : "text.primary",
+              }}
+            >
+              Board B
+            </Button>
+          </ButtonGroup>
+        </Stack>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Grid
+            container
+            spacing={0.5}
+            sx={{
+              maxWidth: activeBoard === "boardA" ? 360 : 270,
+              margin: "0 auto",
+            }}
+          >
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(9, 1fr)",
+                border: 2,
+                borderColor:
+                  activeBoard === "boardA" ? "success.main" : "transparent",
+              }}
+            >
+              {boardA?.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                  <Box key={`${rowIndex}-${colIndex}`}>
+                    <SudokuCell
+                      value={cell.value}
+                      row={rowIndex}
+                      col={colIndex}
+                      onChange={(row, col, value) =>
+                        handleChange(row, col, value, "boardA")
+                      }
+                      isPreFilled={cell.isPreFilled}
+                      isOwner={activeBoard === "boardA"}
+                      onSelect={() =>
+                        setSelectedCellA({
+                          row: rowIndex,
+                          col: colIndex,
+                        })
+                      }
+                    />
+                  </Box>
+                ))
+              )}
+            </Box>
+          </Grid>
+        </Box>
+        {activeBoard === "boardA" && (
+          <>
+            <Box
+              sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
+            >
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
+                <Box
+                  key={num}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    border: "1px solid #ccc",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      textAlign: "center",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {num}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      textAlign: "center",
+                      fontSize: 12,
+                      color: "text.secondary",
+                    }}
+                  >
+                    {boardA.reduce((acc, row) => {
+                      const count = row.filter(
+                        (cell) => cell.value === num
+                      ).length;
+                      return acc + count;
+                    }, 0)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{
+                  width: "fit-content",
+                }}
+                onClick={() => handleCheck(activeBoard)}
+              >
+                Check
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                disabled={helpCountA === 0 || !selectedCellA}
+                onClick={() => {
+                  if (selectedCellA && helpCountA > 0) {
+                    handleChange(
+                      selectedCellA.row,
+                      selectedCellA.col,
+                      solutionA[selectedCellA.row][
+                        selectedCellA.col
+                      ].toString(),
+                      "boardA"
+                    );
+                    setHelpCountA(helpCountA - 1);
+                  }
+                }}
+              >
+                Help ({helpCountA ?? 0})
+              </Button>
+            </Box>
+          </>
+        )}
+        {isValidA !== null && (
+          <Typography
+            variant="subtitle2"
+            sx={{ mt: 2 }}
+            color={isValidA ? "green" : "error"}
+          >
+            {isValidA ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
+          </Typography>
+        )}
+        <Divider />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Grid
+            container
+            spacing={0.5}
+            sx={{
+              maxWidth: activeBoard === "boardB" ? 360 : 270,
+              margin: "0 auto",
+            }}
+          >
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(9, 1fr)",
+                border: 2,
+                borderColor:
+                  activeBoard === "boardB" ? "success.main" : "transparent",
+              }}
+            >
+              {boardB?.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                  <Box key={`${rowIndex}-${colIndex}`}>
+                    <SudokuCell
+                      value={cell.value}
+                      row={rowIndex}
+                      col={colIndex}
+                      onChange={(row, col, value) =>
+                        handleChange(row, col, value, "boardB")
+                      }
+                      isPreFilled={cell.isPreFilled}
+                      isOwner={activeBoard === "boardB"}
+                      onSelect={() =>
+                        setSelectedCellB({
+                          row: rowIndex,
+                          col: colIndex,
+                        })
+                      }
+                    />
+                  </Box>
+                ))
+              )}
+            </Box>
+          </Grid>
+        </Box>
+        {activeBoard === "boardB" && (
+          <>
+            <Box
+              sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
+            >
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
+                <Box
+                  key={num}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    border: "1px solid #ccc",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      textAlign: "center",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {num}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      textAlign: "center",
+                      fontSize: 12,
+                      color: "text.secondary",
+                    }}
+                  >
+                    {boardB.reduce((acc, row) => {
+                      const count = row.filter(
+                        (cell) => cell.value === num
+                      ).length;
+                      return acc + count;
+                    }, 0)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{ width: "fit-content" }}
+                onClick={() => handleCheck(activeBoard)}
+              >
+                Check
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                disabled={helpCountB === 0 || !selectedCellB}
+                onClick={() => {
+                  if (selectedCellB && helpCountB > 0) {
+                    handleChange(
+                      selectedCellB.row,
+                      selectedCellB.col,
+                      solutionB[selectedCellB.row][
+                        selectedCellB.col
+                      ].toString(),
+                      "boardB"
+                    );
+                    setHelpCountB(helpCountB - 1);
+                  }
+                }}
+              >
+                Help ({helpCountA ?? 0})
+              </Button>
+            </Box>
+          </>
+        )}
+        {isValidB !== null && (
+          <Typography
+            variant="subtitle2"
+            sx={{ mt: 2 }}
+            color={isValidB ? "green" : "error"}
+          >
+            {isValidB ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
+          </Typography>
+        )}
+        <Divider sx={{ pb: 2 }} />
       </Stack>
-
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid
-          container
-          spacing={0.5}
-          sx={{
-            maxWidth: activeBoard === "boardA" ? 360 : 270,
-            margin: "0 auto",
-          }}
-        >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(9, 1fr)",
-              border: 2,
-              borderColor:
-                activeBoard === "boardA" ? "success.main" : "transparent",
-            }}
-          >
-            {boardA?.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <Box key={`${rowIndex}-${colIndex}`}>
-                  <SudokuCell
-                    value={cell.value}
-                    row={rowIndex}
-                    col={colIndex}
-                    onChange={(row, col, value) =>
-                      handleChange(row, col, value, "boardA")
-                    }
-                    isPreFilled={cell.isPreFilled}
-                    isOwner={activeBoard === "boardA"}
-                    onSelect={() =>
-                      setSelectedCellA({
-                        row: rowIndex,
-                        col: colIndex,
-                      })
-                    }
-                  />
-                </Box>
-              ))
-            )}
-          </Box>
-        </Grid>
-      </Box>
-      {activeBoard === "boardA" && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{
-              width: "fit-content",
-            }}
-            onClick={() => handleCheck(activeBoard)}
-          >
-            Check
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            disabled={helpCountA === 0 || !selectedCellA}
-            onClick={() => {
-              if (selectedCellA && helpCountA > 0) {
-                handleChange(
-                  selectedCellA.row,
-                  selectedCellA.col,
-                  solutionA[selectedCellA.row][selectedCellA.col].toString(),
-                  "boardA"
-                );
-                setHelpCountA(helpCountA - 1);
-              }
-            }}
-          >
-            Help ({helpCountA ?? 0})
-          </Button>
-        </Box>
-      )}
-      {isValidA !== null && (
-        <Typography
-          variant="subtitle2"
-          sx={{ mt: 2 }}
-          color={isValidA ? "green" : "error"}
-        >
-          {isValidA ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
-        </Typography>
-      )}
-      <Divider />
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid
-          container
-          spacing={0.5}
-          sx={{
-            maxWidth: activeBoard === "boardB" ? 360 : 270,
-            margin: "0 auto",
-          }}
-        >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(9, 1fr)",
-              border: 2,
-              borderColor:
-                activeBoard === "boardB" ? "success.main" : "transparent",
-            }}
-          >
-            {boardB?.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <Box key={`${rowIndex}-${colIndex}`}>
-                  <SudokuCell
-                    value={cell.value}
-                    row={rowIndex}
-                    col={colIndex}
-                    onChange={(row, col, value) =>
-                      handleChange(row, col, value, "boardB")
-                    }
-                    isPreFilled={cell.isPreFilled}
-                    isOwner={activeBoard === "boardB"}
-                    onSelect={() =>
-                      setSelectedCellB({
-                        row: rowIndex,
-                        col: colIndex,
-                      })
-                    }
-                  />
-                </Box>
-              ))
-            )}
-          </Box>
-        </Grid>
-      </Box>
-      {activeBoard === "boardB" && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ width: "fit-content" }}
-            onClick={() => handleCheck(activeBoard)}
-          >
-            Check
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            disabled={helpCountB === 0 || !selectedCellB}
-            onClick={() => {
-              if (selectedCellB && helpCountB > 0) {
-                handleChange(
-                  selectedCellB.row,
-                  selectedCellB.col,
-                  solutionB[selectedCellB.row][selectedCellB.col].toString(),
-                  "boardB"
-                );
-                setHelpCountB(helpCountB - 1);
-              }
-            }}
-          >
-            Help ({helpCountA ?? 0})
-          </Button>
-        </Box>
-      )}
-
-      {isValidB !== null && (
-        <Typography
-          variant="subtitle2"
-          sx={{ mt: 2 }}
-          color={isValidB ? "green" : "error"}
-        >
-          {isValidB ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
-        </Typography>
-      )}
-      <Divider />
-    </Stack>
+    </>
   );
 }
