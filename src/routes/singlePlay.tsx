@@ -28,6 +28,7 @@ function RouteComponent() {
           .map(() => [])
       )
   );
+  const [activeNoteNumber, setActiveNoteNumber] = useState<string>("");
 
   const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
     mutationFn: generateNewBoardData,
@@ -103,6 +104,15 @@ function RouteComponent() {
           helpCount: helpCount,
         })
       );
+      setNoteNumbers((prev) => {
+        const newNoteNumbers = prev.map((rowArray, i) =>
+          rowArray.map((colArray, j) =>
+            i === row && j === col ? [] : colArray
+          )
+        );
+        localStorage.setItem("noteNumbers", JSON.stringify(newNoteNumbers));
+        return newNoteNumbers;
+      });
     }
   };
 
@@ -240,12 +250,15 @@ function RouteComponent() {
                       }
                       isPreFilled={cell.isPreFilled}
                       isOwner={true}
-                      onSelect={() =>
+                      onSelect={() => {
                         setSelectedCell({
                           row: rowIndex,
                           col: colIndex,
-                        })
-                      }
+                        });
+                        if (isNoteMode && activeNoteNumber) {
+                          handleChange(rowIndex, colIndex, activeNoteNumber);
+                        }
+                      }}
                       noteNumbers={noteNumbers?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
@@ -266,7 +279,22 @@ function RouteComponent() {
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
             <Box
               key={num}
-              sx={{ width: "100%", height: "100%", border: "1px solid #ccc" }}
+              sx={{
+                width: "100%",
+                height: "100%",
+                border: activeNoteNumber === num ? "1px solid" : "1px solid",
+                borderColor: activeNoteNumber === num ? "primary.main" : "#ccc",
+                bgcolor:
+                  activeNoteNumber === num ? "primary.light" : "transparent",
+                cursor: isNoteMode ? "pointer" : "default",
+                "&:hover": {
+                  bgcolor: isNoteMode ? "primary.light" : "transparent",
+                },
+              }}
+              onClick={() => {
+                isNoteMode &&
+                  setActiveNoteNumber((prev) => (prev === num ? "" : num));
+              }}
             >
               <Typography
                 variant="body2"
@@ -314,7 +342,10 @@ function RouteComponent() {
             variant="outlined"
             color="primary"
             sx={{ width: "fit-content" }}
-            onClick={() => setIsNoteMode(!isNoteMode)}
+            onClick={() => {
+              setIsNoteMode(!isNoteMode);
+              setActiveNoteNumber("");
+            }}
           >
             {isNoteMode ? "Note Off" : "Note On"}
           </Button>

@@ -70,6 +70,8 @@ export function Sudoku({ roomId }: Props) {
     useState<string[][][]>(emptyNoteNumbers);
   const [noteNumbersB, setNoteNumbersB] =
     useState<string[][][]>(emptyNoteNumbers);
+  const [activeNoteNumberA, setActiveNoteNumberA] = useState<string>("");
+  const [activeNoteNumberB, setActiveNoteNumberB] = useState<string>("");
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -147,6 +149,18 @@ export function Sudoku({ roomId }: Props) {
           setBoardA(newBoard);
           // Debounced API call instead of immediate call
           debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
+          setNoteNumbersA((prev) => {
+            const newNoteNumbers = prev.map((rowArray, i) =>
+              rowArray.map((colArray, j) =>
+                i === row && j === col ? [] : colArray
+              )
+            );
+            localStorage.setItem(
+              "noteNumbersA",
+              JSON.stringify(newNoteNumbers)
+            );
+            return newNoteNumbers;
+          });
         }
       } else {
         if (isNoteModeB) {
@@ -177,6 +191,18 @@ export function Sudoku({ roomId }: Props) {
           setBoardB(newBoard);
           // Debounced API call instead of immediate call
           debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
+          setNoteNumbersA((prev) => {
+            const newNoteNumbers = prev.map((rowArray, i) =>
+              rowArray.map((colArray, j) =>
+                i === row && j === col ? [] : colArray
+              )
+            );
+            localStorage.setItem(
+              "noteNumbersA",
+              JSON.stringify(newNoteNumbers)
+            );
+            return newNoteNumbers;
+          });
         }
       }
     }
@@ -389,12 +415,20 @@ export function Sudoku({ roomId }: Props) {
                       }
                       isPreFilled={cell.isPreFilled}
                       isOwner={activeBoard === "boardA"}
-                      onSelect={() =>
+                      onSelect={() => {
                         setSelectedCellA({
                           row: rowIndex,
                           col: colIndex,
-                        })
-                      }
+                        });
+                        if (isNoteModeA && activeNoteNumberA) {
+                          handleChange(
+                            rowIndex,
+                            colIndex,
+                            activeNoteNumberA,
+                            "boardA"
+                          );
+                        }
+                      }}
                       noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
@@ -422,7 +456,22 @@ export function Sudoku({ roomId }: Props) {
                   sx={{
                     width: "100%",
                     height: "100%",
-                    border: "1px solid #ccc",
+                    border:
+                      activeNoteNumberA === num ? "1px solid" : "1px solid",
+                    borderColor:
+                      activeNoteNumberA === num ? "primary.main" : "#ccc",
+                    bgcolor:
+                      activeNoteNumberA === num
+                        ? "primary.light"
+                        : "transparent",
+                    cursor: isNoteModeA ? "pointer" : "default",
+                    "&:hover": {
+                      bgcolor: isNoteModeA ? "primary.light" : "transparent",
+                    },
+                  }}
+                  onClick={() => {
+                    isNoteModeA &&
+                      setActiveNoteNumberA((prev) => (prev === num ? "" : num));
                   }}
                 >
                   <Typography
@@ -467,7 +516,10 @@ export function Sudoku({ roomId }: Props) {
                 variant="outlined"
                 color="primary"
                 sx={{ width: "fit-content" }}
-                onClick={() => setIsNoteModeA(!isNoteModeA)}
+                onClick={() => {
+                  setIsNoteModeA(!isNoteModeA);
+                  setActiveNoteNumberA("");
+                }}
               >
                 {isNoteModeA ? "Note Off" : "Note On"}
               </Button>
@@ -535,12 +587,20 @@ export function Sudoku({ roomId }: Props) {
                       }
                       isPreFilled={cell.isPreFilled}
                       isOwner={activeBoard === "boardB"}
-                      onSelect={() =>
+                      onSelect={() => {
                         setSelectedCellB({
                           row: rowIndex,
                           col: colIndex,
-                        })
-                      }
+                        });
+                        if (isNoteModeB && activeNoteNumberB) {
+                          handleChange(
+                            rowIndex,
+                            colIndex,
+                            activeNoteNumberB,
+                            "boardB"
+                          );
+                        }
+                      }}
                       noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
@@ -568,7 +628,22 @@ export function Sudoku({ roomId }: Props) {
                   sx={{
                     width: "100%",
                     height: "100%",
-                    border: "1px solid #ccc",
+                    border:
+                      activeNoteNumberB === num ? "1px solid" : "1px solid",
+                    borderColor:
+                      activeNoteNumberB === num ? "primary.main" : "#ccc",
+                    bgcolor:
+                      activeNoteNumberB === num
+                        ? "primary.light"
+                        : "transparent",
+                    cursor: isNoteModeB ? "pointer" : "default",
+                    "&:hover": {
+                      bgcolor: isNoteModeB ? "primary.light" : "transparent",
+                    },
+                  }}
+                  onClick={() => {
+                    isNoteModeB &&
+                      setActiveNoteNumberB((prev) => (prev === num ? "" : num));
                   }}
                 >
                   <Typography
@@ -611,7 +686,10 @@ export function Sudoku({ roomId }: Props) {
                 variant="outlined"
                 color="primary"
                 sx={{ width: "fit-content" }}
-                onClick={() => setIsNoteModeB(!isNoteModeB)}
+                onClick={() => {
+                  setIsNoteModeB(!isNoteModeB);
+                  setActiveNoteNumberB("");
+                }}
               >
                 {isNoteModeB ? "Note Off" : "Note On"}
               </Button>
