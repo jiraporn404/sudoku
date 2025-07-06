@@ -84,7 +84,7 @@ const SudokuCell = React.memo(
               padding: "2px",
               fontSize: "8px",
               fontFamily: "Kanit",
-              color: "#666",
+              color: isOwner ? "#666" : "#fff",
               pointerEvents: "none",
             }}
           >

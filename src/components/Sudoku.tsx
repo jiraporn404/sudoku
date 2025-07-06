@@ -39,6 +39,14 @@ const useDebounce = (callback: Function, delay: number) => {
   );
 };
 
+const emptyNoteNumbers = Array(9)
+  .fill(null)
+  .map(() =>
+    Array(9)
+      .fill(null)
+      .map(() => [])
+  );
+
 export function Sudoku({ roomId }: Props) {
   const [boardA, setBoardA] = useState<Cell[][]>(emptyBoard);
   const [boardB, setBoardB] = useState<Cell[][]>(emptyBoard);
@@ -58,24 +66,10 @@ export function Sudoku({ roomId }: Props) {
   } | null>(null);
   const [isNoteModeA, setIsNoteModeA] = useState<boolean>(false);
   const [isNoteModeB, setIsNoteModeB] = useState<boolean>(false);
-  const [noteNumbersA, setNoteNumbersA] = useState<string[][][]>(
-    Array(9)
-      .fill(null)
-      .map(() =>
-        Array(9)
-          .fill(null)
-          .map(() => [])
-      )
-  );
-  const [noteNumbersB, setNoteNumbersB] = useState<string[][][]>(
-    Array(9)
-      .fill(null)
-      .map(() =>
-        Array(9)
-          .fill(null)
-          .map(() => [])
-      )
-  );
+  const [noteNumbersA, setNoteNumbersA] =
+    useState<string[][][]>(emptyNoteNumbers);
+  const [noteNumbersB, setNoteNumbersB] =
+    useState<string[][][]>(emptyNoteNumbers);
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -136,6 +130,10 @@ export function Sudoku({ roomId }: Props) {
                   : colArray
               )
             );
+            localStorage.setItem(
+              "noteNumbersA",
+              JSON.stringify(newNoteNumbers)
+            );
             return newNoteNumbers;
           });
         } else {
@@ -162,17 +160,24 @@ export function Sudoku({ roomId }: Props) {
                   : colArray
               )
             );
+            localStorage.setItem(
+              "noteNumbersB",
+              JSON.stringify(newNoteNumbers)
+            );
             return newNoteNumbers;
           });
+        } else {
+          const newBoard = board.map((r, i) =>
+            r.map((cell, j) =>
+              i === row && j === col
+                ? { value: value, isPreFilled: false }
+                : cell
+            )
+          );
+          setBoardB(newBoard);
+          // Debounced API call instead of immediate call
+          debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
         }
-        const newBoard = board.map((r, i) =>
-          r.map((cell, j) =>
-            i === row && j === col ? { value: value, isPreFilled: false } : cell
-          )
-        );
-        setBoardB(newBoard);
-        // Debounced API call instead of immediate call
-        debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
       }
     }
   };
@@ -249,27 +254,22 @@ export function Sudoku({ roomId }: Props) {
     await refetch();
     setIsValidA(null);
     setIsValidB(null);
-    setNoteNumbersA(
-      Array(9)
-        .fill(null)
-        .map(() =>
-          Array(9)
-            .fill(null)
-            .map(() => [])
-        )
-    );
-    setNoteNumbersB(
-      Array(9)
-        .fill(null)
-        .map(() =>
-          Array(9)
-            .fill(null)
-            .map(() => [])
-        )
-    );
+    setNoteNumbersA(emptyNoteNumbers);
+    setNoteNumbersB(emptyNoteNumbers);
+    localStorage.setItem("noteNumbersA", JSON.stringify(emptyNoteNumbers));
+    localStorage.setItem("noteNumbersB", JSON.stringify(emptyNoteNumbers));
   };
 
   useEffect(() => {
+    const storageNoteNumbersA = localStorage.getItem("noteNumbersA");
+    const storageNoteNumbersB = localStorage.getItem("noteNumbersB");
+    if (storageNoteNumbersA) {
+      setNoteNumbersA(JSON.parse(storageNoteNumbersA));
+    }
+    if (storageNoteNumbersB) {
+      setNoteNumbersB(JSON.parse(storageNoteNumbersB));
+    }
+
     if (data) {
       setBoardA(data.boardA.userAnswers);
       setBoardB(data.boardB.userAnswers);
@@ -277,24 +277,6 @@ export function Sudoku({ roomId }: Props) {
       setHelpCountB(data.boardB.helpCount);
       setSolutionA(data.boardA.solution);
       setSolutionB(data.boardB.solution);
-      setNoteNumbersA(
-        Array(9)
-          .fill(null)
-          .map(() =>
-            Array(9)
-              .fill(null)
-              .map(() => [])
-          )
-      );
-      setNoteNumbersB(
-        Array(9)
-          .fill(null)
-          .map(() =>
-            Array(9)
-              .fill(null)
-              .map(() => [])
-          )
-      );
     }
   }, [data]);
 

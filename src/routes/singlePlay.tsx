@@ -50,6 +50,18 @@ function RouteComponent() {
         )
     );
     localStorage.setItem(
+      "noteNumbers",
+      JSON.stringify(
+        Array(9)
+          .fill(null)
+          .map(() =>
+            Array(9)
+              .fill(null)
+              .map(() => [])
+          )
+      )
+    );
+    localStorage.setItem(
       "board",
       JSON.stringify({
         board: newBoard.puzzle,
@@ -74,6 +86,7 @@ function RouteComponent() {
               : colArray
           )
         );
+        localStorage.setItem("noteNumbers", JSON.stringify(newNoteNumbers));
         return newNoteNumbers;
       });
     } else {
@@ -139,6 +152,18 @@ function RouteComponent() {
 
   useEffect(() => {
     const storageBoard = localStorage.getItem("board");
+    const storageNoteNumbers = localStorage.getItem("noteNumbers");
+    setNoteNumbers(
+      storageNoteNumbers
+        ? JSON.parse(storageNoteNumbers)
+        : Array(9)
+            .fill(null)
+            .map(() =>
+              Array(9)
+                .fill(null)
+                .map(() => [])
+            )
+    );
     if (storageBoard) {
       const { board, difficulty, solution, helpCount } =
         JSON.parse(storageBoard);
