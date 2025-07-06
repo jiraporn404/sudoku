@@ -56,6 +56,26 @@ export function Sudoku({ roomId }: Props) {
     row: number;
     col: number;
   } | null>(null);
+  const [isNoteModeA, setIsNoteModeA] = useState<boolean>(false);
+  const [isNoteModeB, setIsNoteModeB] = useState<boolean>(false);
+  const [noteNumbersA, setNoteNumbersA] = useState<string[][][]>(
+    Array(9)
+      .fill(null)
+      .map(() =>
+        Array(9)
+          .fill(null)
+          .map(() => [])
+      )
+  );
+  const [noteNumbersB, setNoteNumbersB] = useState<string[][][]>(
+    Array(9)
+      .fill(null)
+      .map(() =>
+        Array(9)
+          .fill(null)
+          .map(() => [])
+      )
+  );
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -100,32 +120,60 @@ export function Sudoku({ roomId }: Props) {
   ) => {
     activeBoard === boardType && setIsValidA(null);
     activeBoard === boardType && setIsValidB(null);
+
+    const board = boardType === "boardA" ? boardA : boardB;
+
     if (/^[1-9]?$/.test(value)) {
-      const newBoard =
-        boardType === "boardA"
-          ? boardA.map((r, i) =>
-              r.map((cell, j) =>
+      if (boardType === "boardA") {
+        if (isNoteModeA) {
+          setNoteNumbersA((prev) => {
+            const newNoteNumbers = prev.map((rowArray, i) =>
+              rowArray.map((colArray, j) =>
                 i === row && j === col
-                  ? { value: value, isPreFilled: false }
-                  : cell
-              )
-            )
-          : boardB.map((r, i) =>
-              r.map((cell, j) =>
-                i === row && j === col
-                  ? { value: value, isPreFilled: false }
-                  : cell
+                  ? colArray.includes(value)
+                    ? colArray.filter((v: string) => v !== value) // Remove if already exists
+                    : [...colArray, value] // Add if doesn't exist
+                  : colArray
               )
             );
-
-      if (boardType === "boardA") {
-        setBoardA(newBoard);
+            return newNoteNumbers;
+          });
+        } else {
+          const newBoard = board.map((r, i) =>
+            r.map((cell, j) =>
+              i === row && j === col
+                ? { value: value, isPreFilled: false }
+                : cell
+            )
+          );
+          setBoardA(newBoard);
+          // Debounced API call instead of immediate call
+          debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
+        }
       } else {
+        if (isNoteModeB) {
+          setNoteNumbersB((prev) => {
+            const newNoteNumbers = prev.map((rowArray, i) =>
+              rowArray.map((colArray, j) =>
+                i === row && j === col
+                  ? colArray.includes(value)
+                    ? colArray.filter((v: string) => v !== value) // Remove if already exists
+                    : [...colArray, value] // Add if doesn't exist
+                  : colArray
+              )
+            );
+            return newNoteNumbers;
+          });
+        }
+        const newBoard = board.map((r, i) =>
+          r.map((cell, j) =>
+            i === row && j === col ? { value: value, isPreFilled: false } : cell
+          )
+        );
         setBoardB(newBoard);
+        // Debounced API call instead of immediate call
+        debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
       }
-
-      // Debounced API call instead of immediate call
-      debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
     }
   };
 
@@ -201,6 +249,24 @@ export function Sudoku({ roomId }: Props) {
     await refetch();
     setIsValidA(null);
     setIsValidB(null);
+    setNoteNumbersA(
+      Array(9)
+        .fill(null)
+        .map(() =>
+          Array(9)
+            .fill(null)
+            .map(() => [])
+        )
+    );
+    setNoteNumbersB(
+      Array(9)
+        .fill(null)
+        .map(() =>
+          Array(9)
+            .fill(null)
+            .map(() => [])
+        )
+    );
   };
 
   useEffect(() => {
@@ -211,6 +277,24 @@ export function Sudoku({ roomId }: Props) {
       setHelpCountB(data.boardB.helpCount);
       setSolutionA(data.boardA.solution);
       setSolutionB(data.boardB.solution);
+      setNoteNumbersA(
+        Array(9)
+          .fill(null)
+          .map(() =>
+            Array(9)
+              .fill(null)
+              .map(() => [])
+          )
+      );
+      setNoteNumbersB(
+        Array(9)
+          .fill(null)
+          .map(() =>
+            Array(9)
+              .fill(null)
+              .map(() => [])
+          )
+      );
     }
   }, [data]);
 
@@ -254,6 +338,7 @@ export function Sudoku({ roomId }: Props) {
             Level: {data?.boardA.difficulty}
           </Typography>
         </Box>
+
         <Stack direction="row" justifyContent="center">
           <Button
             variant="contained"
@@ -328,6 +413,7 @@ export function Sudoku({ roomId }: Props) {
                           col: colIndex,
                         })
                       }
+                      noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
                 ))
@@ -337,6 +423,14 @@ export function Sudoku({ roomId }: Props) {
         </Box>
         {activeBoard === "boardA" && (
           <>
+            {isNoteModeA && (
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "Luckiest Guy", letterSpacing: 10 }}
+              >
+                ✍🏻 Note Mode
+              </Typography>
+            )}
             <Box
               sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
             >
@@ -388,6 +482,15 @@ export function Sudoku({ roomId }: Props) {
                 Check
               </Button>
               <Button
+                variant="outlined"
+                color="primary"
+                sx={{ width: "fit-content" }}
+                onClick={() => setIsNoteModeA(!isNoteModeA)}
+              >
+                {isNoteModeA ? "Note Off" : "Note On"}
+              </Button>
+              <Button
+                data-sudoku-board
                 variant="outlined"
                 color="secondary"
                 disabled={helpCountA === 0 || !selectedCellA}
@@ -456,6 +559,7 @@ export function Sudoku({ roomId }: Props) {
                           col: colIndex,
                         })
                       }
+                      noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
                 ))
@@ -465,6 +569,14 @@ export function Sudoku({ roomId }: Props) {
         </Box>
         {activeBoard === "boardB" && (
           <>
+            {isNoteModeB && (
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "Luckiest Guy", letterSpacing: 10 }}
+              >
+                ✍🏻 Note Mode
+              </Typography>
+            )}
             <Box
               sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
             >
@@ -514,6 +626,15 @@ export function Sudoku({ roomId }: Props) {
                 Check
               </Button>
               <Button
+                variant="outlined"
+                color="primary"
+                sx={{ width: "fit-content" }}
+                onClick={() => setIsNoteModeB(!isNoteModeB)}
+              >
+                {isNoteModeB ? "Note Off" : "Note On"}
+              </Button>
+              <Button
+                data-sudoku-board
                 variant="outlined"
                 color="secondary"
                 disabled={helpCountB === 0 || !selectedCellB}

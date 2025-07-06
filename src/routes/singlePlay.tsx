@@ -18,6 +18,16 @@ function RouteComponent() {
     col: number;
   } | null>(null);
   const [helpCount, setHelpCount] = useState<number>(0);
+  const [isNoteMode, setIsNoteMode] = useState<boolean>(false);
+  const [noteNumbers, setNoteNumbers] = useState<string[][][]>(
+    Array(9)
+      .fill(null)
+      .map(() =>
+        Array(9)
+          .fill(null)
+          .map(() => [])
+      )
+  );
 
   const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
     mutationFn: generateNewBoardData,
@@ -30,6 +40,15 @@ function RouteComponent() {
     setDifficulty(newBoard.difficulty);
     setSolution(newBoard.solution);
     setHelpCount(3);
+    setNoteNumbers(
+      Array(9)
+        .fill(null)
+        .map(() =>
+          Array(9)
+            .fill(null)
+            .map(() => [])
+        )
+    );
     localStorage.setItem(
       "board",
       JSON.stringify({
@@ -44,19 +63,34 @@ function RouteComponent() {
 
   const handleChange = (row: number, col: number, value: string) => {
     setIsValid(null);
-    const newBoard = board.map((r, i) =>
-      r.map((cell, j) => (i === row && j === col ? { ...cell, value } : cell))
-    );
-    setBoard(newBoard);
-    localStorage.setItem(
-      "board",
-      JSON.stringify({
-        board: newBoard,
-        difficulty: difficulty,
-        solution: solution,
-        helpCount: helpCount,
-      })
-    );
+    if (isNoteMode) {
+      setNoteNumbers((prev) => {
+        const newNoteNumbers = prev.map((rowArray, i) =>
+          rowArray.map((colArray, j) =>
+            i === row && j === col
+              ? colArray.includes(value)
+                ? colArray.filter((v: string) => v !== value) // Remove if already exists
+                : [...colArray, value] // Add if doesn't exist
+              : colArray
+          )
+        );
+        return newNoteNumbers;
+      });
+    } else {
+      const newBoard = board.map((r, i) =>
+        r.map((cell, j) => (i === row && j === col ? { ...cell, value } : cell))
+      );
+      setBoard(newBoard);
+      localStorage.setItem(
+        "board",
+        JSON.stringify({
+          board: newBoard,
+          difficulty: difficulty,
+          solution: solution,
+          helpCount: helpCount,
+        })
+      );
+    }
   };
 
   const validateBoard = (): boolean => {
@@ -170,7 +204,7 @@ function RouteComponent() {
               }}
             >
               {board?.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
+                row?.map((cell, colIndex) => (
                   <Box key={`${rowIndex}-${colIndex}`}>
                     <SudokuCell
                       value={cell.value}
@@ -187,6 +221,7 @@ function RouteComponent() {
                           col: colIndex,
                         })
                       }
+                      noteNumbers={noteNumbers?.[rowIndex]?.[colIndex] ?? []}
                     />
                   </Box>
                 ))
@@ -194,6 +229,14 @@ function RouteComponent() {
             </Box>
           </Grid>
         </Box>
+        {isNoteMode && (
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: "Luckiest Guy", letterSpacing: 10 }}
+          >
+            ✍🏻 Note Mode
+          </Typography>
+        )}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}>
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
             <Box
@@ -243,6 +286,15 @@ function RouteComponent() {
             Check
           </Button>
           <Button
+            variant="outlined"
+            color="primary"
+            sx={{ width: "fit-content" }}
+            onClick={() => setIsNoteMode(!isNoteMode)}
+          >
+            {isNoteMode ? "Note Off" : "Note On"}
+          </Button>
+          <Button
+            data-sudoku-board
             variant="outlined"
             color="secondary"
             disabled={helpCount === 0 || !selectedCell}

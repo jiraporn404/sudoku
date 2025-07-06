@@ -121,5 +121,10 @@ export const theme = createTheme({
         spacing: 2,
       },
     },
+    MuiButton: {
+      defaultProps: {
+        size: "small",
+      },
+    },
   },
 });
