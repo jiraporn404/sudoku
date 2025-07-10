@@ -40,7 +40,7 @@ function RouteComponent() {
     setBoard(newBoard.puzzle);
     setDifficulty(newBoard.difficulty);
     setSolution(newBoard.solution);
-    setHelpCount(3);
+    setHelpCount(5);
     setNoteNumbers(
       Array(9)
         .fill(null)
@@ -69,7 +69,7 @@ function RouteComponent() {
         difficulty: newBoard.difficulty,
         solution: newBoard.solution,
         activeBoard: "",
-        helpCount: 3,
+        helpCount: 5,
       })
     );
   };

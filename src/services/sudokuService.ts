@@ -100,7 +100,7 @@ export const generateNewBoardData = async (): Promise<BoardData> => {
       solution: apiBoard.solution,
       userAnswers,
       difficulty: apiBoard.difficulty,
-      helpCount: 3,
+      helpCount: 5,
     };
   } catch (error) {
     console.error("Error generating new board:", error);
@@ -113,7 +113,7 @@ export const generateNewBoardData = async (): Promise<BoardData> => {
         .map(() => Array(9).fill(0)),
       userAnswers: createUserAnswersBoard(emptyPuzzle),
       difficulty: "unknown",
-      helpCount: 3,
+      helpCount: 5,
     };
   }
 };
