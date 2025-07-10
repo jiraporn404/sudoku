@@ -467,14 +467,9 @@ export function Sudoku({ roomId }: Props) {
                     sx={{
                       width: "100%",
                       height: "100%",
-                      border:
-                        activeNoteNumberA === num ? "1px solid" : "1px solid",
-                      borderColor:
-                        activeNoteNumberA === num ? "primary.main" : "#ccc",
-                      bgcolor:
-                        activeNoteNumberA === num
-                          ? "primary.light"
-                          : "transparent",
+                      border: "1px solid",
+                      borderColor: "#ccc",
+                      bgcolor: "transparent",
                       cursor: "pointer",
                       // "&:hover": {
                       //   bgcolor: "primary.light",
@@ -672,14 +667,9 @@ export function Sudoku({ roomId }: Props) {
                     sx={{
                       width: "100%",
                       height: "100%",
-                      border:
-                        activeNoteNumberB === num ? "1px solid" : "1px solid",
-                      borderColor:
-                        activeNoteNumberB === num ? "primary.main" : "#ccc",
-                      bgcolor:
-                        activeNoteNumberB === num
-                          ? "primary.light"
-                          : "transparent",
+                      border: "1px solid",
+                      borderColor: "#ccc",
+                      bgcolor: "transparent",
                       cursor: "pointer",
                       // "&:hover": {
                       //   bgcolor: "primary.light",
