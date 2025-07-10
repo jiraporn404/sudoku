@@ -427,18 +427,18 @@ export function Sudoku({ roomId }: Props) {
                             row: rowIndex,
                             col: colIndex,
                           });
-                          if (activeNoteNumberA) {
-                            if (activeNoteNumberA === cell.value) {
-                              handleChange(rowIndex, colIndex, "", "boardA");
-                            } else {
-                              handleChange(
-                                rowIndex,
-                                colIndex,
-                                activeNoteNumberA,
-                                "boardA"
-                              );
-                            }
-                          }
+                          // if (activeNoteNumberA) {
+                          //   if (activeNoteNumberA === cell.value) {
+                          //     handleChange(rowIndex, colIndex, "", "boardA");
+                          //   } else {
+                          //     handleChange(
+                          //       rowIndex,
+                          //       colIndex,
+                          //       activeNoteNumberA,
+                          //       "boardA"
+                          //     );
+                          //   }
+                          // }
                         }}
                         noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellA ?? undefined}
@@ -562,7 +562,7 @@ export function Sudoku({ roomId }: Props) {
                 data-sudoku-board
                 variant="outlined"
                 color="secondary"
-                disabled={helpCountA === 0 || !selectedCellA}
+                disabled={helpCountA === 0 || !selectedCellA || isNoteModeA}
                 onClick={() => {
                   if (selectedCellA && helpCountA > 0) {
                     handleChange(
@@ -632,18 +632,18 @@ export function Sudoku({ roomId }: Props) {
                             row: rowIndex,
                             col: colIndex,
                           });
-                          if (activeNoteNumberB) {
-                            if (activeNoteNumberB === cell.value) {
-                              handleChange(rowIndex, colIndex, "", "boardB");
-                            } else {
-                              handleChange(
-                                rowIndex,
-                                colIndex,
-                                activeNoteNumberB,
-                                "boardB"
-                              );
-                            }
-                          }
+                          // if (activeNoteNumberB) {
+                          //   if (activeNoteNumberB === cell.value) {
+                          //     handleChange(rowIndex, colIndex, "", "boardB");
+                          //   } else {
+                          //     handleChange(
+                          //       rowIndex,
+                          //       colIndex,
+                          //       activeNoteNumberB,
+                          //       "boardB"
+                          //     );
+                          //   }
+                          // }
                         }}
                         noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellB ?? undefined}
@@ -765,7 +765,7 @@ export function Sudoku({ roomId }: Props) {
                 data-sudoku-board
                 variant="outlined"
                 color="secondary"
-                disabled={helpCountB === 0 || !selectedCellB}
+                disabled={helpCountB === 0 || !selectedCellB || isNoteModeB}
                 onClick={() => {
                   if (selectedCellB && helpCountB > 0) {
                     handleChange(

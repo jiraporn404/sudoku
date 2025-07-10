@@ -311,17 +311,17 @@ function RouteComponent() {
                               row: rowIndex,
                               col: colIndex,
                             });
-                            if (activeNoteNumber) {
-                              if (activeNoteNumber === cell.value) {
-                                handleChange(rowIndex, colIndex, "");
-                              } else {
-                                handleChange(
-                                  rowIndex,
-                                  colIndex,
-                                  activeNoteNumber
-                                );
-                              }
-                            }
+                            // if (activeNoteNumber) {
+                            //   if (activeNoteNumber === cell.value) {
+                            //     handleChange(rowIndex, colIndex, "");
+                            //   } else {
+                            //     handleChange(
+                            //       rowIndex,
+                            //       colIndex,
+                            //       activeNoteNumber
+                            //     );
+                            //   }
+                            // }
                           }}
                           noteNumbers={
                             noteNumbers?.[rowIndex]?.[colIndex] ?? []
@@ -431,7 +431,7 @@ function RouteComponent() {
             data-sudoku-board
             variant="outlined"
             color="secondary"
-            disabled={helpCount === 0 || !selectedCell}
+            disabled={helpCount === 0 || !selectedCell || isNoteMode}
             onClick={() => {
               if (selectedCell && helpCount > 0) {
                 handleChange(
