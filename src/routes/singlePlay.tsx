@@ -29,7 +29,6 @@ function RouteComponent() {
           .map(() => [])
       )
   );
-  const [activeNoteNumber, setActiveNoteNumber] = useState<string>("");
 
   const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
     mutationFn: generateNewBoardData,
@@ -271,7 +270,6 @@ function RouteComponent() {
                   }}
                   onClick={() => {
                     setIsNoteMode(!isNoteMode);
-                    setActiveNoteNumber("");
                   }}
                 >
                   {isNoteMode ? "Note Off" : "Note On"}
@@ -366,10 +364,16 @@ function RouteComponent() {
                       // },
                     }}
                     onClick={() => {
-                      if (selectedCell && activeNoteNumber !== num) {
-                        handleChange(selectedCell.row, selectedCell.col, num);
+                      if (selectedCell) {
+                        handleChange(
+                          selectedCell.row,
+                          selectedCell.col,
+                          board[selectedCell.row][selectedCell.col].value ===
+                            num
+                            ? ""
+                            : num
+                        );
                       }
-                      setActiveNoteNumber((prev) => (prev === num ? "" : num));
                     }}
                   >
                     <Typography

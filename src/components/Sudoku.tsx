@@ -72,8 +72,6 @@ export function Sudoku({ roomId }: Props) {
     useState<string[][][]>(emptyNoteNumbers);
   const [noteNumbersB, setNoteNumbersB] =
     useState<string[][][]>(emptyNoteNumbers);
-  const [activeNoteNumberA, setActiveNoteNumberA] = useState<string>("");
-  const [activeNoteNumberB, setActiveNoteNumberB] = useState<string>("");
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -476,15 +474,17 @@ export function Sudoku({ roomId }: Props) {
                       // },
                     }}
                     onClick={() => {
-                      if (selectedCellA && activeNoteNumberA !== num) {
+                      if (selectedCellA) {
                         handleChange(
                           selectedCellA.row,
                           selectedCellA.col,
-                          num,
+                          boardA[selectedCellA.row][selectedCellA.col].value ===
+                            num
+                            ? ""
+                            : num,
                           "boardA"
                         );
                       }
-                      setActiveNoteNumberA((prev) => (prev === num ? "" : num));
                     }}
                   >
                     <Typography
@@ -548,7 +548,6 @@ export function Sudoku({ roomId }: Props) {
                 }}
                 onClick={() => {
                   setIsNoteModeA(!isNoteModeA);
-                  setActiveNoteNumberA("");
                 }}
               >
                 {isNoteModeA ? "Note Off" : "Note On"}
@@ -676,15 +675,17 @@ export function Sudoku({ roomId }: Props) {
                       // },
                     }}
                     onClick={() => {
-                      if (selectedCellB && activeNoteNumberB !== num) {
+                      if (selectedCellB) {
                         handleChange(
                           selectedCellB.row,
                           selectedCellB.col,
-                          num,
+                          boardB[selectedCellB.row][selectedCellB.col].value ===
+                            num
+                            ? ""
+                            : num,
                           "boardB"
                         );
                       }
-                      setActiveNoteNumberB((prev) => (prev === num ? "" : num));
                     }}
                   >
                     <Typography
@@ -746,7 +747,6 @@ export function Sudoku({ roomId }: Props) {
                 }}
                 onClick={() => {
                   setIsNoteModeB(!isNoteModeB);
-                  setActiveNoteNumberB("");
                 }}
               >
                 {isNoteModeB ? "Note Off" : "Note On"}
