@@ -313,20 +313,20 @@ export function Sudoku({ roomId }: Props) {
     return () => clearInterval(interval);
   }, [refetch]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest("[data-sudoku-board]")) {
-        setSelectedCellA(null);
-        setSelectedCellB(null);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     const target = event.target as HTMLElement;
+  //     if (!target.closest("[data-sudoku-board]")) {
+  //       setSelectedCellA(null);
+  //       setSelectedCellB(null);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -410,9 +410,9 @@ export function Sudoku({ roomId }: Props) {
                       value={cell.value}
                       row={rowIndex}
                       col={colIndex}
-                      onChange={(row, col, value) =>
-                        handleChange(row, col, value, "boardA")
-                      }
+                      // onChange={(row, col, value) =>
+                      //   handleChange(row, col, value, "boardA")
+                      // }
                       isPreFilled={cell.isPreFilled}
                       isOwner={activeBoard === "boardA"}
                       onSelect={() => {
@@ -420,16 +420,21 @@ export function Sudoku({ roomId }: Props) {
                           row: rowIndex,
                           col: colIndex,
                         });
-                        if (isNoteModeA && activeNoteNumberA) {
-                          handleChange(
-                            rowIndex,
-                            colIndex,
-                            activeNoteNumberA,
-                            "boardA"
-                          );
+                        if (activeNoteNumberA) {
+                          if (activeNoteNumberA === cell.value) {
+                            handleChange(rowIndex, colIndex, "", "boardA");
+                          } else {
+                            handleChange(
+                              rowIndex,
+                              colIndex,
+                              activeNoteNumberA,
+                              "boardA"
+                            );
+                          }
                         }
                       }}
                       noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
+                      selectedCell={selectedCellA ?? undefined}
                     />
                   </Box>
                 ))
@@ -464,14 +469,21 @@ export function Sudoku({ roomId }: Props) {
                       activeNoteNumberA === num
                         ? "primary.light"
                         : "transparent",
-                    cursor: isNoteModeA ? "pointer" : "default",
-                    "&:hover": {
-                      bgcolor: isNoteModeA ? "primary.light" : "transparent",
-                    },
+                    cursor: "pointer",
+                    // "&:hover": {
+                    //   bgcolor: "primary.light",
+                    // },
                   }}
                   onClick={() => {
-                    isNoteModeA &&
-                      setActiveNoteNumberA((prev) => (prev === num ? "" : num));
+                    if (selectedCellA) {
+                      handleChange(
+                        selectedCellA.row,
+                        selectedCellA.col,
+                        num,
+                        "boardA"
+                      );
+                    }
+                    setActiveNoteNumberA((prev) => (prev === num ? "" : num));
                   }}
                 >
                   <Typography
@@ -582,9 +594,9 @@ export function Sudoku({ roomId }: Props) {
                       value={cell.value}
                       row={rowIndex}
                       col={colIndex}
-                      onChange={(row, col, value) =>
-                        handleChange(row, col, value, "boardB")
-                      }
+                      // onChange={(row, col, value) =>
+                      //   handleChange(row, col, value, "boardB")
+                      // }
                       isPreFilled={cell.isPreFilled}
                       isOwner={activeBoard === "boardB"}
                       onSelect={() => {
@@ -592,16 +604,21 @@ export function Sudoku({ roomId }: Props) {
                           row: rowIndex,
                           col: colIndex,
                         });
-                        if (isNoteModeB && activeNoteNumberB) {
-                          handleChange(
-                            rowIndex,
-                            colIndex,
-                            activeNoteNumberB,
-                            "boardB"
-                          );
+                        if (activeNoteNumberB) {
+                          if (activeNoteNumberB === cell.value) {
+                            handleChange(rowIndex, colIndex, "", "boardB");
+                          } else {
+                            handleChange(
+                              rowIndex,
+                              colIndex,
+                              activeNoteNumberB,
+                              "boardB"
+                            );
+                          }
                         }
                       }}
                       noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
+                      selectedCell={selectedCellB ?? undefined}
                     />
                   </Box>
                 ))
@@ -636,14 +653,21 @@ export function Sudoku({ roomId }: Props) {
                       activeNoteNumberB === num
                         ? "primary.light"
                         : "transparent",
-                    cursor: isNoteModeB ? "pointer" : "default",
-                    "&:hover": {
-                      bgcolor: isNoteModeB ? "primary.light" : "transparent",
-                    },
+                    cursor: "pointer",
+                    // "&:hover": {
+                    //   bgcolor: "primary.light",
+                    // },
                   }}
                   onClick={() => {
-                    isNoteModeB &&
-                      setActiveNoteNumberB((prev) => (prev === num ? "" : num));
+                    if (selectedCellB) {
+                      handleChange(
+                        selectedCellB.row,
+                        selectedCellB.col,
+                        num,
+                        "boardB"
+                      );
+                    }
+                    setActiveNoteNumberB((prev) => (prev === num ? "" : num));
                   }}
                 >
                   <Typography

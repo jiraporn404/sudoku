@@ -186,19 +186,19 @@ function RouteComponent() {
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest("[data-sudoku-board]")) {
-        setSelectedCell(null);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     const target = event.target as HTMLElement;
+  //     if (!target.closest("[data-sudoku-board]")) {
+  //       setSelectedCell(null);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -245,9 +245,9 @@ function RouteComponent() {
                       value={cell.value}
                       row={rowIndex}
                       col={colIndex}
-                      onChange={(row, col, value) =>
-                        handleChange(row, col, value)
-                      }
+                      // onChange={(row, col, value) =>
+                      //   handleChange(row, col, value)
+                      // }
                       isPreFilled={cell.isPreFilled}
                       isOwner={true}
                       onSelect={() => {
@@ -255,11 +255,16 @@ function RouteComponent() {
                           row: rowIndex,
                           col: colIndex,
                         });
-                        if (isNoteMode && activeNoteNumber) {
-                          handleChange(rowIndex, colIndex, activeNoteNumber);
+                        if (activeNoteNumber) {
+                          if (activeNoteNumber === cell.value) {
+                            handleChange(rowIndex, colIndex, "");
+                          } else {
+                            handleChange(rowIndex, colIndex, activeNoteNumber);
+                          }
                         }
                       }}
                       noteNumbers={noteNumbers?.[rowIndex]?.[colIndex] ?? []}
+                      selectedCell={selectedCell ?? undefined}
                     />
                   </Box>
                 ))
@@ -276,50 +281,62 @@ function RouteComponent() {
           </Typography>
         )}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
-            <Box
-              key={num}
-              sx={{
-                width: "100%",
-                height: "100%",
-                border: activeNoteNumber === num ? "1px solid" : "1px solid",
-                borderColor: activeNoteNumber === num ? "primary.main" : "#ccc",
-                bgcolor:
-                  activeNoteNumber === num ? "primary.light" : "transparent",
-                cursor: isNoteMode ? "pointer" : "default",
-                "&:hover": {
-                  bgcolor: isNoteMode ? "primary.light" : "transparent",
-                },
-              }}
-              onClick={() => {
-                isNoteMode &&
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => {
+            const count = board.reduce((acc, row) => {
+              const count = row.filter((cell) => cell.value === num).length;
+              return acc + count;
+            }, 0);
+            return (
+              <Box
+                key={num}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  border: activeNoteNumber === num ? "1px solid" : "1px solid",
+                  borderColor:
+                    activeNoteNumber === num ? "primary.main" : "#ccc",
+                  bgcolor:
+                    activeNoteNumber === num ? "primary.light" : "transparent",
+                  cursor: "pointer",
+                  // "&:hover": {
+                  //   bgcolor: "primary.light",
+                  // },
+                }}
+                onClick={() => {
+                  if (selectedCell) {
+                    handleChange(selectedCell.row, selectedCell.col, num);
+                  }
                   setActiveNoteNumber((prev) => (prev === num ? "" : num));
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  textAlign: "center",
-                  fontWeight: 500,
                 }}
               >
-                {num}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  textAlign: "center",
-                  fontSize: 12,
-                  color: "text.secondary",
-                }}
-              >
-                {board.reduce((acc, row) => {
-                  const count = row.filter((cell) => cell.value === num).length;
-                  return acc + count;
-                }, 0)}
-              </Typography>
-            </Box>
-          ))}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    textAlign: "center",
+                    fontWeight: 500,
+                  }}
+                >
+                  {num}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    fontSize: 12,
+                    color:
+                      count === 9
+                        ? "success.main"
+                        : count > 9
+                          ? "error.main"
+                          : "text.secondary",
+                    fontWeight: count === 9 ? 500 : 400,
+                  }}
+                >
+                  {count}
+                </Typography>
+              </Box>
+            );
+          })}
         </Box>
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
           <Button

@@ -74,6 +74,7 @@ function RouteComponent() {
             <Stack>
               {Object.keys(rooms).map((roomId) => (
                 <Box
+                  key={roomId}
                   sx={{
                     border: "1px dashed",
                     p: 1,
