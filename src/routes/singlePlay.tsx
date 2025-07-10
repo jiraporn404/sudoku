@@ -303,7 +303,7 @@ function RouteComponent() {
                   // },
                 }}
                 onClick={() => {
-                  if (selectedCell) {
+                  if (selectedCell && activeNoteNumber !== num) {
                     handleChange(selectedCell.row, selectedCell.col, num);
                   }
                   setActiveNoteNumber((prev) => (prev === num ? "" : num));

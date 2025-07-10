@@ -475,7 +475,7 @@ export function Sudoku({ roomId }: Props) {
                     // },
                   }}
                   onClick={() => {
-                    if (selectedCellA) {
+                    if (selectedCellA && activeNoteNumberA !== num) {
                       handleChange(
                         selectedCellA.row,
                         selectedCellA.col,
@@ -659,7 +659,7 @@ export function Sudoku({ roomId }: Props) {
                     // },
                   }}
                   onClick={() => {
-                    if (selectedCellB) {
+                    if (selectedCellB && activeNoteNumberB !== num) {
                       handleChange(
                         selectedCellB.row,
                         selectedCellB.col,
