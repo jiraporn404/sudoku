@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { emptyBoard, type Cell } from "../utils/generateData";
 import { generateNewBoardData } from "../services/sudokuService";
-import { Button, Grid, Stack, Typography } from "@mui/material";
+import { Button, Grid, Stack, Typography, useMediaQuery } from "@mui/material";
 import { Box } from "@mui/material";
 import SudokuCell from "../components/SudokuCell";
 import { useMutation } from "@tanstack/react-query";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
+  const md = useMediaQuery("(min-width: 600px)");
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
   const [solution, setSolution] = useState<number[][]>([]);
@@ -223,121 +224,191 @@ function RouteComponent() {
             Level: {difficulty}
           </Typography>
         </Box>
-        <Box
-          data-sudoku-board
-          sx={{ display: "flex", justifyContent: "center" }}
+        <Stack
+          direction={md ? "row" : "column"}
+          justifyContent="center"
+          alignItems="center"
         >
-          <Grid
-            container
-            spacing={0.5}
-            sx={{ maxWidth: 360, margin: "0 auto" }}
-          >
+          <div>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                height: 30,
+                mb: 1,
+              }}
+            >
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: 300,
+                  margin: "0 auto",
+                  px: 2,
+                }}
+              >
+                {isNoteMode && (
+                  <Typography
+                    variant="body2"
+                    sx={{ fontFamily: "Luckiest Guy", letterSpacing: 5 }}
+                  >
+                    ✍🏻 Note Mode
+                  </Typography>
+                )}
+                <Button
+                  variant={isNoteMode ? "contained" : "outlined"}
+                  color="primary"
+                  sx={{
+                    position: "absolute",
+                    right: 0,
+                    width: "fit-content",
+                    alignSelf: "flex-end",
+                    fontFamily: "Luckiest Guy",
+                    color: isNoteMode ? "white" : "primary.main",
+                  }}
+                  onClick={() => {
+                    setIsNoteMode(!isNoteMode);
+                    setActiveNoteNumber("");
+                  }}
+                >
+                  {isNoteMode ? "Note Off" : "Note On"}
+                </Button>
+              </Stack>
+            </Box>
+
+            <Box
+              data-sudoku-board
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
+              <Grid
+                container
+                spacing={0.5}
+                sx={{ maxWidth: 360, margin: "0 auto" }}
+              >
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(9, 1fr)",
+                  }}
+                >
+                  {board?.map((row, rowIndex) =>
+                    row?.map((cell, colIndex) => (
+                      <Box key={`${rowIndex}-${colIndex}`}>
+                        <SudokuCell
+                          value={cell.value}
+                          row={rowIndex}
+                          col={colIndex}
+                          // onChange={(row, col, value) =>
+                          //   handleChange(row, col, value)
+                          // }
+                          isPreFilled={cell.isPreFilled}
+                          isOwner={true}
+                          onSelect={() => {
+                            setSelectedCell({
+                              row: rowIndex,
+                              col: colIndex,
+                            });
+                            if (activeNoteNumber) {
+                              if (activeNoteNumber === cell.value) {
+                                handleChange(rowIndex, colIndex, "");
+                              } else {
+                                handleChange(
+                                  rowIndex,
+                                  colIndex,
+                                  activeNoteNumber
+                                );
+                              }
+                            }
+                          }}
+                          noteNumbers={
+                            noteNumbers?.[rowIndex]?.[colIndex] ?? []
+                          }
+                          selectedCell={selectedCell ?? undefined}
+                        />
+                      </Box>
+                    ))
+                  )}
+                </Box>
+              </Grid>
+            </Box>
+          </div>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "repeat(9, 1fr)",
+                gridTemplateColumns: "repeat(3, 40px)",
+                gap: 1,
+                maxWidth: 360,
+                margin: "0 auto",
+                px: 2,
               }}
             >
-              {board?.map((row, rowIndex) =>
-                row?.map((cell, colIndex) => (
-                  <Box key={`${rowIndex}-${colIndex}`}>
-                    <SudokuCell
-                      value={cell.value}
-                      row={rowIndex}
-                      col={colIndex}
-                      // onChange={(row, col, value) =>
-                      //   handleChange(row, col, value)
-                      // }
-                      isPreFilled={cell.isPreFilled}
-                      isOwner={true}
-                      onSelect={() => {
-                        setSelectedCell({
-                          row: rowIndex,
-                          col: colIndex,
-                        });
-                        if (activeNoteNumber) {
-                          if (activeNoteNumber === cell.value) {
-                            handleChange(rowIndex, colIndex, "");
-                          } else {
-                            handleChange(rowIndex, colIndex, activeNoteNumber);
-                          }
-                        }
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => {
+                const count = board.reduce((acc, row) => {
+                  const count = row.filter((cell) => cell.value === num).length;
+                  return acc + count;
+                }, 0);
+                return (
+                  <Box
+                    key={num}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      border:
+                        activeNoteNumber === num ? "1px solid" : "1px solid",
+                      borderColor:
+                        activeNoteNumber === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumber === num
+                          ? "primary.light"
+                          : "transparent",
+                      cursor: "pointer",
+                      // "&:hover": {
+                      //   bgcolor: "primary.light",
+                      // },
+                    }}
+                    onClick={() => {
+                      if (selectedCell && activeNoteNumber !== num) {
+                        handleChange(selectedCell.row, selectedCell.col, num);
+                      }
+                      setActiveNoteNumber((prev) => (prev === num ? "" : num));
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textAlign: "center",
+                        fontWeight: 500,
                       }}
-                      noteNumbers={noteNumbers?.[rowIndex]?.[colIndex] ?? []}
-                      selectedCell={selectedCell ?? undefined}
-                    />
+                    >
+                      {num}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: "center",
+                        fontSize: 12,
+                        color:
+                          count === 9
+                            ? "success.main"
+                            : count > 9
+                              ? "error.main"
+                              : "text.secondary",
+                        fontWeight: count === 9 ? 500 : 400,
+                      }}
+                    >
+                      {count}
+                    </Typography>
                   </Box>
-                ))
-              )}
+                );
+              })}
             </Box>
-          </Grid>
-        </Box>
-        {isNoteMode && (
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "Luckiest Guy", letterSpacing: 10 }}
-          >
-            ✍🏻 Note Mode
-          </Typography>
-        )}
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => {
-            const count = board.reduce((acc, row) => {
-              const count = row.filter((cell) => cell.value === num).length;
-              return acc + count;
-            }, 0);
-            return (
-              <Box
-                key={num}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  border: activeNoteNumber === num ? "1px solid" : "1px solid",
-                  borderColor:
-                    activeNoteNumber === num ? "primary.main" : "#ccc",
-                  bgcolor:
-                    activeNoteNumber === num ? "primary.light" : "transparent",
-                  cursor: "pointer",
-                  // "&:hover": {
-                  //   bgcolor: "primary.light",
-                  // },
-                }}
-                onClick={() => {
-                  if (selectedCell && activeNoteNumber !== num) {
-                    handleChange(selectedCell.row, selectedCell.col, num);
-                  }
-                  setActiveNoteNumber((prev) => (prev === num ? "" : num));
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    textAlign: "center",
-                    fontWeight: 500,
-                  }}
-                >
-                  {num}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    textAlign: "center",
-                    fontSize: 12,
-                    color:
-                      count === 9
-                        ? "success.main"
-                        : count > 9
-                          ? "error.main"
-                          : "text.secondary",
-                    fontWeight: count === 9 ? 500 : 400,
-                  }}
-                >
-                  {count}
-                </Typography>
-              </Box>
-            );
-          })}
-        </Box>
+          </Box>
+        </Stack>
+
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
           <Button
             variant="contained"
@@ -355,17 +426,7 @@ function RouteComponent() {
           >
             Check
           </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ width: "fit-content" }}
-            onClick={() => {
-              setIsNoteMode(!isNoteMode);
-              setActiveNoteNumber("");
-            }}
-          >
-            {isNoteMode ? "Note Off" : "Note On"}
-          </Button>
+
           <Button
             data-sudoku-board
             variant="outlined"

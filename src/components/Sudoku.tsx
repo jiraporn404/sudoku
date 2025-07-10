@@ -6,6 +6,7 @@ import {
   Grid,
   Stack,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useState, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -48,6 +49,7 @@ const emptyNoteNumbers = Array(9)
   );
 
 export function Sudoku({ roomId }: Props) {
+  const md = useMediaQuery("(min-width: 600px)");
   const [boardA, setBoardA] = useState<Cell[][]>(emptyBoard);
   const [boardB, setBoardB] = useState<Cell[][]>(emptyBoard);
   const [solutionA, setSolutionA] = useState<number[][]>([]);
@@ -385,63 +387,142 @@ export function Sudoku({ roomId }: Props) {
             </Button>
           </ButtonGroup>
         </Stack>
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Grid
-            container
-            spacing={0.5}
-            sx={{
-              maxWidth: activeBoard === "boardA" ? 360 : 270,
-              margin: "0 auto",
-            }}
-          >
-            <Box
+        <Stack
+          direction={md ? "row" : "column"}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Grid
+              container
+              spacing={0.5}
               sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(9, 1fr)",
-                border: 2,
-                borderColor:
-                  activeBoard === "boardA" ? "success.main" : "transparent",
+                maxWidth: activeBoard === "boardA" ? 360 : 270,
+                margin: "0 auto",
               }}
             >
-              {boardA?.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <Box key={`${rowIndex}-${colIndex}`}>
-                    <SudokuCell
-                      value={cell.value}
-                      row={rowIndex}
-                      col={colIndex}
-                      // onChange={(row, col, value) =>
-                      //   handleChange(row, col, value, "boardA")
-                      // }
-                      isPreFilled={cell.isPreFilled}
-                      isOwner={activeBoard === "boardA"}
-                      onSelect={() => {
-                        setSelectedCellA({
-                          row: rowIndex,
-                          col: colIndex,
-                        });
-                        if (activeNoteNumberA) {
-                          if (activeNoteNumberA === cell.value) {
-                            handleChange(rowIndex, colIndex, "", "boardA");
-                          } else {
-                            handleChange(
-                              rowIndex,
-                              colIndex,
-                              activeNoteNumberA,
-                              "boardA"
-                            );
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(9, 1fr)",
+                  border: 2,
+                  borderColor:
+                    activeBoard === "boardA" ? "success.main" : "transparent",
+                }}
+              >
+                {boardA?.map((row, rowIndex) =>
+                  row.map((cell, colIndex) => (
+                    <Box key={`${rowIndex}-${colIndex}`}>
+                      <SudokuCell
+                        value={cell.value}
+                        row={rowIndex}
+                        col={colIndex}
+                        // onChange={(row, col, value) =>
+                        //   handleChange(row, col, value, "boardA")
+                        // }
+                        isPreFilled={cell.isPreFilled}
+                        isOwner={activeBoard === "boardA"}
+                        onSelect={() => {
+                          setSelectedCellA({
+                            row: rowIndex,
+                            col: colIndex,
+                          });
+                          if (activeNoteNumberA) {
+                            if (activeNoteNumberA === cell.value) {
+                              handleChange(rowIndex, colIndex, "", "boardA");
+                            } else {
+                              handleChange(
+                                rowIndex,
+                                colIndex,
+                                activeNoteNumberA,
+                                "boardA"
+                              );
+                            }
                           }
-                        }
+                        }}
+                        noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
+                        selectedCell={selectedCellA ?? undefined}
+                      />
+                    </Box>
+                  ))
+                )}
+              </Box>
+            </Grid>
+          </Box>
+          {activeBoard === "boardA" && (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 40px)",
+                  gap: 1,
+                  maxWidth: 360,
+                  margin: "0 auto",
+                  px: 2,
+                }}
+              >
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
+                  <Box
+                    key={num}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      border:
+                        activeNoteNumberA === num ? "1px solid" : "1px solid",
+                      borderColor:
+                        activeNoteNumberA === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumberA === num
+                          ? "primary.light"
+                          : "transparent",
+                      cursor: "pointer",
+                      // "&:hover": {
+                      //   bgcolor: "primary.light",
+                      // },
+                    }}
+                    onClick={() => {
+                      if (selectedCellA && activeNoteNumberA !== num) {
+                        handleChange(
+                          selectedCellA.row,
+                          selectedCellA.col,
+                          num,
+                          "boardA"
+                        );
+                      }
+                      setActiveNoteNumberA((prev) => (prev === num ? "" : num));
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textAlign: "center",
+                        fontWeight: 500,
                       }}
-                      noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
-                      selectedCell={selectedCellA ?? undefined}
-                    />
+                    >
+                      {num}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: "center",
+                        fontSize: 12,
+                        color: "text.secondary",
+                      }}
+                    >
+                      {boardA.reduce((acc, row) => {
+                        const count = row.filter(
+                          (cell) => cell.value === num
+                        ).length;
+                        return acc + count;
+                      }, 0)}
+                    </Typography>
                   </Box>
-                ))
-              )}
+                ))}
+              </Box>
             </Box>
-          </Grid>
-        </Box>
+          )}
+        </Stack>
+
         {activeBoard === "boardA" && (
           <>
             {isNoteModeA && (
@@ -452,67 +533,6 @@ export function Sudoku({ roomId }: Props) {
                 ✍🏻 Note Mode
               </Typography>
             )}
-            <Box
-              sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
-            >
-              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
-                <Box
-                  key={num}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    border:
-                      activeNoteNumberA === num ? "1px solid" : "1px solid",
-                    borderColor:
-                      activeNoteNumberA === num ? "primary.main" : "#ccc",
-                    bgcolor:
-                      activeNoteNumberA === num
-                        ? "primary.light"
-                        : "transparent",
-                    cursor: "pointer",
-                    // "&:hover": {
-                    //   bgcolor: "primary.light",
-                    // },
-                  }}
-                  onClick={() => {
-                    if (selectedCellA && activeNoteNumberA !== num) {
-                      handleChange(
-                        selectedCellA.row,
-                        selectedCellA.col,
-                        num,
-                        "boardA"
-                      );
-                    }
-                    setActiveNoteNumberA((prev) => (prev === num ? "" : num));
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      textAlign: "center",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {num}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      textAlign: "center",
-                      fontSize: 12,
-                      color: "text.secondary",
-                    }}
-                  >
-                    {boardA.reduce((acc, row) => {
-                      const count = row.filter(
-                        (cell) => cell.value === num
-                      ).length;
-                      return acc + count;
-                    }, 0)}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
               <Button
                 variant="contained"
@@ -525,9 +545,12 @@ export function Sudoku({ roomId }: Props) {
                 Check
               </Button>
               <Button
-                variant="outlined"
+                variant={isNoteModeA ? "contained" : "outlined"}
                 color="primary"
-                sx={{ width: "fit-content" }}
+                sx={{
+                  width: "fit-content",
+                  color: isNoteModeA ? "white" : "primary.main",
+                }}
                 onClick={() => {
                   setIsNoteModeA(!isNoteModeA);
                   setActiveNoteNumberA("");
@@ -569,63 +592,142 @@ export function Sudoku({ roomId }: Props) {
           </Typography>
         )}
         <Divider />
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Grid
-            container
-            spacing={0.5}
-            sx={{
-              maxWidth: activeBoard === "boardB" ? 360 : 270,
-              margin: "0 auto",
-            }}
-          >
-            <Box
+        <Stack
+          direction={md ? "row" : "column"}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Grid
+              container
+              spacing={0.5}
               sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(9, 1fr)",
-                border: 2,
-                borderColor:
-                  activeBoard === "boardB" ? "success.main" : "transparent",
+                maxWidth: activeBoard === "boardB" ? 360 : 270,
+                margin: "0 auto",
               }}
             >
-              {boardB?.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <Box key={`${rowIndex}-${colIndex}`}>
-                    <SudokuCell
-                      value={cell.value}
-                      row={rowIndex}
-                      col={colIndex}
-                      // onChange={(row, col, value) =>
-                      //   handleChange(row, col, value, "boardB")
-                      // }
-                      isPreFilled={cell.isPreFilled}
-                      isOwner={activeBoard === "boardB"}
-                      onSelect={() => {
-                        setSelectedCellB({
-                          row: rowIndex,
-                          col: colIndex,
-                        });
-                        if (activeNoteNumberB) {
-                          if (activeNoteNumberB === cell.value) {
-                            handleChange(rowIndex, colIndex, "", "boardB");
-                          } else {
-                            handleChange(
-                              rowIndex,
-                              colIndex,
-                              activeNoteNumberB,
-                              "boardB"
-                            );
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(9, 1fr)",
+                  border: 2,
+                  borderColor:
+                    activeBoard === "boardB" ? "success.main" : "transparent",
+                }}
+              >
+                {boardB?.map((row, rowIndex) =>
+                  row.map((cell, colIndex) => (
+                    <Box key={`${rowIndex}-${colIndex}`}>
+                      <SudokuCell
+                        value={cell.value}
+                        row={rowIndex}
+                        col={colIndex}
+                        // onChange={(row, col, value) =>
+                        //   handleChange(row, col, value, "boardB")
+                        // }
+                        isPreFilled={cell.isPreFilled}
+                        isOwner={activeBoard === "boardB"}
+                        onSelect={() => {
+                          setSelectedCellB({
+                            row: rowIndex,
+                            col: colIndex,
+                          });
+                          if (activeNoteNumberB) {
+                            if (activeNoteNumberB === cell.value) {
+                              handleChange(rowIndex, colIndex, "", "boardB");
+                            } else {
+                              handleChange(
+                                rowIndex,
+                                colIndex,
+                                activeNoteNumberB,
+                                "boardB"
+                              );
+                            }
                           }
-                        }
+                        }}
+                        noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
+                        selectedCell={selectedCellB ?? undefined}
+                      />
+                    </Box>
+                  ))
+                )}
+              </Box>
+            </Grid>
+          </Box>
+          {activeBoard === "boardB" && (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 40px)",
+                  gap: 1,
+                  maxWidth: 360,
+                  margin: "0 auto",
+                  px: 2,
+                }}
+              >
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
+                  <Box
+                    key={num}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      border:
+                        activeNoteNumberB === num ? "1px solid" : "1px solid",
+                      borderColor:
+                        activeNoteNumberB === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumberB === num
+                          ? "primary.light"
+                          : "transparent",
+                      cursor: "pointer",
+                      // "&:hover": {
+                      //   bgcolor: "primary.light",
+                      // },
+                    }}
+                    onClick={() => {
+                      if (selectedCellB && activeNoteNumberB !== num) {
+                        handleChange(
+                          selectedCellB.row,
+                          selectedCellB.col,
+                          num,
+                          "boardB"
+                        );
+                      }
+                      setActiveNoteNumberB((prev) => (prev === num ? "" : num));
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textAlign: "center",
+                        fontWeight: 500,
                       }}
-                      noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
-                      selectedCell={selectedCellB ?? undefined}
-                    />
+                    >
+                      {num}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: "center",
+                        fontSize: 12,
+                        color: "text.secondary",
+                      }}
+                    >
+                      {boardB.reduce((acc, row) => {
+                        const count = row.filter(
+                          (cell) => cell.value === num
+                        ).length;
+                        return acc + count;
+                      }, 0)}
+                    </Typography>
                   </Box>
-                ))
-              )}
+                ))}
+              </Box>
             </Box>
-          </Grid>
-        </Box>
+          )}
+        </Stack>
+
         {activeBoard === "boardB" && (
           <>
             {isNoteModeB && (
@@ -636,67 +738,6 @@ export function Sudoku({ roomId }: Props) {
                 ✍🏻 Note Mode
               </Typography>
             )}
-            <Box
-              sx={{ display: "flex", justifyContent: "center", gap: 1, px: 2 }}
-            >
-              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
-                <Box
-                  key={num}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    border:
-                      activeNoteNumberB === num ? "1px solid" : "1px solid",
-                    borderColor:
-                      activeNoteNumberB === num ? "primary.main" : "#ccc",
-                    bgcolor:
-                      activeNoteNumberB === num
-                        ? "primary.light"
-                        : "transparent",
-                    cursor: "pointer",
-                    // "&:hover": {
-                    //   bgcolor: "primary.light",
-                    // },
-                  }}
-                  onClick={() => {
-                    if (selectedCellB && activeNoteNumberB !== num) {
-                      handleChange(
-                        selectedCellB.row,
-                        selectedCellB.col,
-                        num,
-                        "boardB"
-                      );
-                    }
-                    setActiveNoteNumberB((prev) => (prev === num ? "" : num));
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      textAlign: "center",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {num}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      textAlign: "center",
-                      fontSize: 12,
-                      color: "text.secondary",
-                    }}
-                  >
-                    {boardB.reduce((acc, row) => {
-                      const count = row.filter(
-                        (cell) => cell.value === num
-                      ).length;
-                      return acc + count;
-                    }, 0)}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
               <Button
                 variant="contained"
@@ -707,9 +748,12 @@ export function Sudoku({ roomId }: Props) {
                 Check
               </Button>
               <Button
-                variant="outlined"
+                variant={isNoteModeB ? "contained" : "outlined"}
                 color="primary"
-                sx={{ width: "fit-content" }}
+                sx={{
+                  width: "fit-content",
+                  color: isNoteModeB ? "white" : "primary.main",
+                }}
                 onClick={() => {
                   setIsNoteModeB(!isNoteModeB);
                   setActiveNoteNumberB("");
