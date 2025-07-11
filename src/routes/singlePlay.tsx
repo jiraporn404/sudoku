@@ -9,6 +9,8 @@ import { useMutation } from "@tanstack/react-query";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
+  const touchDuration = 1000;
+  let pressTimer: NodeJS.Timeout | undefined = undefined;
   const md = useMediaQuery("(min-width: 600px)");
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
@@ -29,6 +31,7 @@ function RouteComponent() {
           .map(() => [])
       )
   );
+  const [activeNoteNumber, setActiveNoteNumber] = useState<string | null>(null);
 
   const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
     mutationFn: generateNewBoardData,
@@ -349,17 +352,17 @@ function RouteComponent() {
                               row: rowIndex,
                               col: colIndex,
                             });
-                            // if (activeNoteNumber) {
-                            //   if (activeNoteNumber === cell.value) {
-                            //     handleChange(rowIndex, colIndex, "");
-                            //   } else {
-                            //     handleChange(
-                            //       rowIndex,
-                            //       colIndex,
-                            //       activeNoteNumber
-                            //     );
-                            //   }
-                            // }
+                            if (activeNoteNumber) {
+                              if (activeNoteNumber === cell.value) {
+                                handleChange(rowIndex, colIndex, "");
+                              } else {
+                                handleChange(
+                                  rowIndex,
+                                  colIndex,
+                                  activeNoteNumber
+                                );
+                              }
+                            }
                           }}
                           noteNumbers={
                             noteNumbers?.[rowIndex]?.[colIndex] ?? []
@@ -396,14 +399,19 @@ function RouteComponent() {
                       width: "100%",
                       height: "100%",
                       border: "1px solid",
-                      borderColor: "#ccc",
-                      bgcolor: "transparent",
+                      borderColor:
+                        activeNoteNumber === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumber === num
+                          ? "primary.light"
+                          : "transparent",
                       cursor: "pointer",
-                      // "&:hover": {
-                      //   bgcolor: "primary.light",
-                      // },
                     }}
                     onClick={() => {
+                      if (activeNoteNumber) {
+                        setActiveNoteNumber(null);
+                        return;
+                      }
                       if (selectedCell) {
                         handleChange(
                           selectedCell.row,
@@ -414,6 +422,14 @@ function RouteComponent() {
                             : num
                         );
                       }
+                    }}
+                    onTouchStart={() => {
+                      pressTimer = setTimeout(() => {
+                        setActiveNoteNumber(num);
+                      }, touchDuration);
+                    }}
+                    onTouchEnd={() => {
+                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography
