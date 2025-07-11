@@ -470,6 +470,7 @@ export function Sudoku({ roomId }: Props) {
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                   <Box
                     key={num}
+                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -688,6 +689,7 @@ export function Sudoku({ roomId }: Props) {
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                   <Box
                     key={num}
+                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -703,9 +705,7 @@ export function Sudoku({ roomId }: Props) {
                       //   bgcolor: "primary.light",
                       // },
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onClick={() => {
                       if (activeNoteNumberB) {
                         setActiveNoteNumberB(null);
                         return;
@@ -722,16 +722,12 @@ export function Sudoku({ roomId }: Props) {
                         );
                       }
                     }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onTouchStart={() => {
                       pressTimer = setTimeout(() => {
                         setActiveNoteNumberB(num);
                       }, touchDuration);
                     }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onTouchEnd={() => {
                       clearTimeout(pressTimer);
                     }}
                   >

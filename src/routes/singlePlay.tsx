@@ -395,6 +395,7 @@ function RouteComponent() {
                 return (
                   <Box
                     key={num}
+                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -407,9 +408,7 @@ function RouteComponent() {
                           : "transparent",
                       cursor: "pointer",
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onClick={() => {
                       if (activeNoteNumber) {
                         setActiveNoteNumber(null);
                         return;
@@ -425,16 +424,12 @@ function RouteComponent() {
                         );
                       }
                     }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onTouchStart={() => {
                       pressTimer = setTimeout(() => {
                         setActiveNoteNumber(num);
                       }, touchDuration);
                     }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
+                    onTouchEnd={() => {
                       clearTimeout(pressTimer);
                     }}
                   >
