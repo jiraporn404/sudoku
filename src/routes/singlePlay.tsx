@@ -156,52 +156,48 @@ function RouteComponent() {
     return true;
   };
 
-  const validateBoard2 = (): boolean => {
-    const isUnique = (arr: string[]) => {
-      const nums = arr.filter((v) => v !== "");
-      return new Set(nums).size === nums.length;
-    };
+  // const validateBoard2 = (): boolean => {
+  //   const isUnique = (arr: string[]) => {
+  //     const nums = arr.filter((v) => v !== "");
+  //     return new Set(nums).size === nums.length;
+  //   };
 
-    // Check for completeness
-    for (let row of board) {
-      for (let cell of row) {
-        if (cell.value === "") return false;
-      }
-    }
+  //   // Check for completeness
+  //   for (let row of board) {
+  //     for (let cell of row) {
+  //       if (cell.value === "") return false;
+  //     }
+  //   }
 
-    // Check rows
-    for (let i = 0; i < 9; i++) {
-      if (!isUnique(board[i].map((cell) => cell.value))) return false;
-    }
+  //   // Check rows
+  //   for (let i = 0; i < 9; i++) {
+  //     if (!isUnique(board[i].map((cell) => cell.value))) return false;
+  //   }
 
-    // Check columns
-    for (let j = 0; j < 9; j++) {
-      const col = board.map((row) => row[j].value);
-      if (!isUnique(col)) return false;
-    }
+  //   // Check columns
+  //   for (let j = 0; j < 9; j++) {
+  //     const col = board.map((row) => row[j].value);
+  //     if (!isUnique(col)) return false;
+  //   }
 
-    // Check 3x3 boxes
-    for (let boxRow = 0; boxRow < 3; boxRow++) {
-      for (let boxCol = 0; boxCol < 3; boxCol++) {
-        const box: string[] = [];
-        for (let i = 0; i < 3; i++) {
-          for (let j = 0; j < 3; j++) {
-            box.push(board[boxRow * 3 + i][boxCol * 3 + j].value);
-          }
-        }
-        if (!isUnique(box)) return false;
-      }
-    }
+  //   // Check 3x3 boxes
+  //   for (let boxRow = 0; boxRow < 3; boxRow++) {
+  //     for (let boxCol = 0; boxCol < 3; boxCol++) {
+  //       const box: string[] = [];
+  //       for (let i = 0; i < 3; i++) {
+  //         for (let j = 0; j < 3; j++) {
+  //           box.push(board[boxRow * 3 + i][boxCol * 3 + j].value);
+  //         }
+  //       }
+  //       if (!isUnique(box)) return false;
+  //     }
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 
   const handleCheck = () => {
     setIsValid(validateBoard());
-  };
-
-  const handleCheck2 = () => {
-    setIsValid(validateBoard2());
   };
 
   useEffect(() => {
@@ -468,14 +464,6 @@ function RouteComponent() {
             onClick={() => handleCheck()}
           >
             Check
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ width: "fit-content" }}
-            onClick={() => handleCheck2()}
-          >
-            Check2
           </Button>
 
           <Button
