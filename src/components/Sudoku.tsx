@@ -49,8 +49,6 @@ const emptyNoteNumbers = Array(9)
   );
 
 export function Sudoku({ roomId }: Props) {
-  const touchDuration = 1000;
-  let pressTimer: NodeJS.Timeout | undefined = undefined;
   const md = useMediaQuery("(min-width: 600px)");
   const [boardA, setBoardA] = useState<Cell[][]>(emptyBoard);
   const [boardB, setBoardB] = useState<Cell[][]>(emptyBoard);
@@ -336,6 +334,18 @@ export function Sudoku({ roomId }: Props) {
   //   };
   // }, []);
 
+  useEffect(() => {
+    if (!isNoteModeA) {
+      setActiveNoteNumberA(null);
+    }
+  }, [isNoteModeA]);
+
+  useEffect(() => {
+    if (!isNoteModeB) {
+      setActiveNoteNumberB(null);
+    }
+  }, [isNoteModeB]);
+
   return (
     <>
       <LoadingOverlay open={isLoading || isPending} />
@@ -470,7 +480,6 @@ export function Sudoku({ roomId }: Props) {
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                   <Box
                     key={num}
-                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -487,8 +496,12 @@ export function Sudoku({ roomId }: Props) {
                       // },
                     }}
                     onClick={() => {
-                      if (activeNoteNumberA) {
+                      if (activeNoteNumberA === num) {
                         setActiveNoteNumberA(null);
+                        return;
+                      }
+                      if (isNoteModeA) {
+                        setActiveNoteNumberA(num);
                         return;
                       }
                       if (selectedCellA) {
@@ -502,14 +515,6 @@ export function Sudoku({ roomId }: Props) {
                           "boardA"
                         );
                       }
-                    }}
-                    onTouchStart={() => {
-                      pressTimer = setTimeout(() => {
-                        setActiveNoteNumberA(num);
-                      }, touchDuration);
-                    }}
-                    onTouchEnd={() => {
-                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography
@@ -689,7 +694,6 @@ export function Sudoku({ roomId }: Props) {
                 {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                   <Box
                     key={num}
-                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -706,8 +710,12 @@ export function Sudoku({ roomId }: Props) {
                       // },
                     }}
                     onClick={() => {
-                      if (activeNoteNumberB) {
+                      if (activeNoteNumberB === num) {
                         setActiveNoteNumberB(null);
+                        return;
+                      }
+                      if (isNoteModeB) {
+                        setActiveNoteNumberB(num);
                         return;
                       }
                       if (selectedCellB) {
@@ -721,14 +729,6 @@ export function Sudoku({ roomId }: Props) {
                           "boardB"
                         );
                       }
-                    }}
-                    onTouchStart={() => {
-                      pressTimer = setTimeout(() => {
-                        setActiveNoteNumberB(num);
-                      }, touchDuration);
-                    }}
-                    onTouchEnd={() => {
-                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography

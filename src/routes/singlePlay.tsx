@@ -9,8 +9,6 @@ import { useMutation } from "@tanstack/react-query";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
-  const touchDuration = 1000;
-  let pressTimer: NodeJS.Timeout | undefined = undefined;
   const md = useMediaQuery("(min-width: 600px)");
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
@@ -243,6 +241,12 @@ function RouteComponent() {
   //   };
   // }, []);
 
+  useEffect(() => {
+    if (!isNoteMode) {
+      setActiveNoteNumber(null);
+    }
+  }, [isNoteMode]);
+
   return (
     <>
       <LoadingOverlay open={isPending} />
@@ -395,7 +399,6 @@ function RouteComponent() {
                 return (
                   <Box
                     key={num}
-                    className="no-select"
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -409,10 +412,15 @@ function RouteComponent() {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      if (activeNoteNumber) {
+                      if (activeNoteNumber === num) {
                         setActiveNoteNumber(null);
                         return;
                       }
+                      if (isNoteMode) {
+                        setActiveNoteNumber(num);
+                        return;
+                      }
+
                       if (selectedCell) {
                         handleChange(
                           selectedCell.row,
@@ -423,14 +431,6 @@ function RouteComponent() {
                             : num
                         );
                       }
-                    }}
-                    onTouchStart={() => {
-                      pressTimer = setTimeout(() => {
-                        setActiveNoteNumber(num);
-                      }, touchDuration);
-                    }}
-                    onTouchEnd={() => {
-                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography

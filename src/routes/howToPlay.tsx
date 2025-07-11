@@ -146,16 +146,6 @@ function RouteComponent() {
 
             <ListItem>
               <ListItemIcon>
-                <TouchApp color="info" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Long Press to Lock Number"
-                secondary="Long press (1 second) on any number in the number pad to lock it. The locked number will be highlighted and can be used repeatedly without reselecting."
-              />
-            </ListItem>
-
-            <ListItem>
-              <ListItemIcon>
                 <Edit color="info" />
               </ListItemIcon>
               <ListItemText
