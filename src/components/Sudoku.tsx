@@ -703,7 +703,9 @@ export function Sudoku({ roomId }: Props) {
                       //   bgcolor: "primary.light",
                       // },
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       if (activeNoteNumberB) {
                         setActiveNoteNumberB(null);
                         return;
@@ -720,12 +722,16 @@ export function Sudoku({ roomId }: Props) {
                         );
                       }
                     }}
-                    onTouchStart={() => {
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       pressTimer = setTimeout(() => {
                         setActiveNoteNumberB(num);
                       }, touchDuration);
                     }}
-                    onTouchEnd={() => {
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       clearTimeout(pressTimer);
                     }}
                   >

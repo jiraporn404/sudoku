@@ -407,7 +407,9 @@ function RouteComponent() {
                           : "transparent",
                       cursor: "pointer",
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       if (activeNoteNumber) {
                         setActiveNoteNumber(null);
                         return;
@@ -423,12 +425,16 @@ function RouteComponent() {
                         );
                       }
                     }}
-                    onTouchStart={() => {
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       pressTimer = setTimeout(() => {
                         setActiveNoteNumber(num);
                       }, touchDuration);
                     }}
-                    onTouchEnd={() => {
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       clearTimeout(pressTimer);
                     }}
                   >
