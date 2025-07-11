@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { createRoom, deleteRoom, listRooms } from "../services/sudokuService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { HelpOutline } from "@mui/icons-material";
 
 const generateRoomId = () => Math.random().toString(36).substring(2, 8);
 
@@ -49,8 +50,8 @@ function RouteComponent() {
     <>
       <LoadingOverlay open={isLoading || isPending || isDeleting} />
       <Container>
-        <Stack mt={2}>
-          <Stack direction="row">
+        <Stack mt={2} spacing={2}>
+          <Stack direction="row" spacing={1}>
             <Button
               variant="contained"
               onClick={() => navigate({ to: "/singlePlay" })}
@@ -69,6 +70,24 @@ function RouteComponent() {
               Create Room
             </Button>
           </Stack>
+
+          <Button
+            variant="outlined"
+            startIcon={<HelpOutline />}
+            onClick={() => navigate({ to: "/howToPlay" })}
+            fullWidth
+            sx={{
+              borderColor: "primary.main",
+              color: "primary.main",
+              "&:hover": {
+                borderColor: "primary.dark",
+                backgroundColor: "primary.light",
+                color: "primary.dark",
+              },
+            }}
+          >
+            How to Play
+          </Button>
 
           {rooms && (
             <Stack>

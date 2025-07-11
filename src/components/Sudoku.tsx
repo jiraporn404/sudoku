@@ -49,6 +49,8 @@ const emptyNoteNumbers = Array(9)
   );
 
 export function Sudoku({ roomId }: Props) {
+  const touchDuration = 1000;
+  let pressTimer: NodeJS.Timeout | undefined = undefined;
   const md = useMediaQuery("(min-width: 600px)");
   const [boardA, setBoardA] = useState<Cell[][]>(emptyBoard);
   const [boardB, setBoardB] = useState<Cell[][]>(emptyBoard);
@@ -72,6 +74,12 @@ export function Sudoku({ roomId }: Props) {
     useState<string[][][]>(emptyNoteNumbers);
   const [noteNumbersB, setNoteNumbersB] =
     useState<string[][][]>(emptyNoteNumbers);
+  const [activeNoteNumberA, setActiveNoteNumberA] = useState<string | null>(
+    null
+  );
+  const [activeNoteNumberB, setActiveNoteNumberB] = useState<string | null>(
+    null
+  );
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -425,18 +433,18 @@ export function Sudoku({ roomId }: Props) {
                             row: rowIndex,
                             col: colIndex,
                           });
-                          // if (activeNoteNumberA) {
-                          //   if (activeNoteNumberA === cell.value) {
-                          //     handleChange(rowIndex, colIndex, "", "boardA");
-                          //   } else {
-                          //     handleChange(
-                          //       rowIndex,
-                          //       colIndex,
-                          //       activeNoteNumberA,
-                          //       "boardA"
-                          //     );
-                          //   }
-                          // }
+                          if (activeNoteNumberA) {
+                            if (activeNoteNumberA === cell.value) {
+                              handleChange(rowIndex, colIndex, "", "boardA");
+                            } else {
+                              handleChange(
+                                rowIndex,
+                                colIndex,
+                                activeNoteNumberA,
+                                "boardA"
+                              );
+                            }
+                          }
                         }}
                         noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellA ?? undefined}
@@ -466,14 +474,22 @@ export function Sudoku({ roomId }: Props) {
                       width: "100%",
                       height: "100%",
                       border: "1px solid",
-                      borderColor: "#ccc",
-                      bgcolor: "transparent",
+                      borderColor:
+                        activeNoteNumberA === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumberA === num
+                          ? "primary.light"
+                          : "transparent",
                       cursor: "pointer",
                       // "&:hover": {
                       //   bgcolor: "primary.light",
                       // },
                     }}
                     onClick={() => {
+                      if (activeNoteNumberA) {
+                        setActiveNoteNumberA(null);
+                        return;
+                      }
                       if (selectedCellA) {
                         handleChange(
                           selectedCellA.row,
@@ -485,6 +501,14 @@ export function Sudoku({ roomId }: Props) {
                           "boardA"
                         );
                       }
+                    }}
+                    onTouchStart={() => {
+                      pressTimer = setTimeout(() => {
+                        setActiveNoteNumberA(num);
+                      }, touchDuration);
+                    }}
+                    onTouchEnd={() => {
+                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography
@@ -626,18 +650,19 @@ export function Sudoku({ roomId }: Props) {
                             row: rowIndex,
                             col: colIndex,
                           });
-                          // if (activeNoteNumberB) {
-                          //   if (activeNoteNumberB === cell.value) {
-                          //     handleChange(rowIndex, colIndex, "", "boardB");
-                          //   } else {
-                          //     handleChange(
-                          //       rowIndex,
-                          //       colIndex,
-                          //       activeNoteNumberB,
-                          //       "boardB"
-                          //     );
-                          //   }
-                          // }
+
+                          if (activeNoteNumberB) {
+                            if (activeNoteNumberB === cell.value) {
+                              handleChange(rowIndex, colIndex, "", "boardB");
+                            } else {
+                              handleChange(
+                                rowIndex,
+                                colIndex,
+                                activeNoteNumberB,
+                                "boardB"
+                              );
+                            }
+                          }
                         }}
                         noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellB ?? undefined}
@@ -667,14 +692,22 @@ export function Sudoku({ roomId }: Props) {
                       width: "100%",
                       height: "100%",
                       border: "1px solid",
-                      borderColor: "#ccc",
-                      bgcolor: "transparent",
+                      borderColor:
+                        activeNoteNumberB === num ? "primary.main" : "#ccc",
+                      bgcolor:
+                        activeNoteNumberB === num
+                          ? "primary.light"
+                          : "transparent",
                       cursor: "pointer",
                       // "&:hover": {
                       //   bgcolor: "primary.light",
                       // },
                     }}
                     onClick={() => {
+                      if (activeNoteNumberB) {
+                        setActiveNoteNumberB(null);
+                        return;
+                      }
                       if (selectedCellB) {
                         handleChange(
                           selectedCellB.row,
@@ -686,6 +719,14 @@ export function Sudoku({ roomId }: Props) {
                           "boardB"
                         );
                       }
+                    }}
+                    onTouchStart={() => {
+                      pressTimer = setTimeout(() => {
+                        setActiveNoteNumberB(num);
+                      }, touchDuration);
+                    }}
+                    onTouchEnd={() => {
+                      clearTimeout(pressTimer);
                     }}
                   >
                     <Typography

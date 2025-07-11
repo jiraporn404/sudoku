@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SinglePlayRouteImport } from './routes/singlePlay'
+import { Route as HowToPlayRouteImport } from './routes/howToPlay'
 import { Route as RoomIdRouteImport } from './routes/$roomId'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SinglePlayRoute = SinglePlayRouteImport.update({
   id: '/singlePlay',
   path: '/singlePlay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowToPlayRoute = HowToPlayRouteImport.update({
+  id: '/howToPlay',
+  path: '/howToPlay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoomIdRoute = RoomIdRouteImport.update({
@@ -32,30 +38,34 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$roomId': typeof RoomIdRoute
+  '/howToPlay': typeof HowToPlayRoute
   '/singlePlay': typeof SinglePlayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$roomId': typeof RoomIdRoute
+  '/howToPlay': typeof HowToPlayRoute
   '/singlePlay': typeof SinglePlayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$roomId': typeof RoomIdRoute
+  '/howToPlay': typeof HowToPlayRoute
   '/singlePlay': typeof SinglePlayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$roomId' | '/singlePlay'
+  fullPaths: '/' | '/$roomId' | '/howToPlay' | '/singlePlay'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$roomId' | '/singlePlay'
-  id: '__root__' | '/' | '/$roomId' | '/singlePlay'
+  to: '/' | '/$roomId' | '/howToPlay' | '/singlePlay'
+  id: '__root__' | '/' | '/$roomId' | '/howToPlay' | '/singlePlay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RoomIdRoute: typeof RoomIdRoute
+  HowToPlayRoute: typeof HowToPlayRoute
   SinglePlayRoute: typeof SinglePlayRoute
 }
 
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/singlePlay'
       fullPath: '/singlePlay'
       preLoaderRoute: typeof SinglePlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/howToPlay': {
+      id: '/howToPlay'
+      path: '/howToPlay'
+      fullPath: '/howToPlay'
+      preLoaderRoute: typeof HowToPlayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$roomId': {
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RoomIdRoute: RoomIdRoute,
+  HowToPlayRoute: HowToPlayRoute,
   SinglePlayRoute: SinglePlayRoute,
 }
 export const routeTree = rootRouteImport
