@@ -1,4 +1,4 @@
-import { Box, type SxProps } from "@mui/material";
+import { Box, useMediaQuery, useTheme, type SxProps } from "@mui/material";
 import React from "react";
 
 type SudokuCellProps = {
@@ -32,7 +32,9 @@ const SudokuCell = React.memo(
     //     onChange(row, col, val);
     //   }
     // };
-
+    const theme = useTheme();
+    const md = useMediaQuery(theme.breakpoints.up("md"));
+    const lg = useMediaQuery(theme.breakpoints.up("lg"));
     const thickRight = (col + 1) % 3 === 0 && col !== 8;
     const thickBottom = (row + 1) % 3 === 0 && row !== 8;
 
@@ -45,14 +47,18 @@ const SudokuCell = React.memo(
             }
           }}
           sx={{
-            width: 30,
-            height: 30,
+            width: isOwner ? (lg ? 50 : md ? 40 : 30) : 30,
+            height: isOwner ? (lg ? 50 : md ? 40 : 30) : 30,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
             aspectRatio: "1",
             textAlign: "center",
             fontWeight: 500,
             fontSize: isOwner
-              ? "clamp(16px, 2.5vw, 18px)"
-              : "clamp(12px, 2.5vw, 14px)",
+              ? "clamp(16px, 2.5vw, 20px)"
+              : "clamp(12px, 2.5vw, 16px)",
             border: "1px solid #ccc",
             borderRight: thickRight ? "2px solid #000" : "1px solid #ccc",
             borderBottom: thickBottom ? "2px solid #000" : "1px solid #ccc",
@@ -106,7 +112,7 @@ const SudokuCell = React.memo(
           }}
           // disabled={isPreFilled || !isOwner}
         /> */}
-        {noteNumbers && (
+        {noteNumbers && !value && (
           <div
             style={{
               position: "absolute",

@@ -2,14 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { emptyBoard, type Cell } from "../utils/generateData";
 import { generateNewBoardData } from "../services/sudokuService";
-import { Button, Grid, Stack, Typography, useMediaQuery } from "@mui/material";
+import {
+  Button,
+  Grid,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { Box } from "@mui/material";
 import SudokuCell from "../components/SudokuCell";
 import { useMutation } from "@tanstack/react-query";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
-  const md = useMediaQuery("(min-width: 600px)");
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.up("md"));
+  const lg = useMediaQuery(theme.breakpoints.up("lg"));
   const [originalBoard, setOriginalBoard] = useState<Cell[][]>(emptyBoard);
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
@@ -117,15 +126,15 @@ function RouteComponent() {
           helpCount: helpCount,
         })
       );
-      setNoteNumbers((prev) => {
-        const newNoteNumbers = prev.map((rowArray, i) =>
-          rowArray.map((colArray, j) =>
-            i === row && j === col ? [] : colArray
-          )
-        );
-        localStorage.setItem("noteNumbers", JSON.stringify(newNoteNumbers));
-        return newNoteNumbers;
-      });
+      // setNoteNumbers((prev) => {
+      //   const newNoteNumbers = prev.map((rowArray, i) =>
+      //     rowArray.map((colArray, j) =>
+      //       i === row && j === col ? [] : colArray
+      //     )
+      //   );
+      //   localStorage.setItem("noteNumbers", JSON.stringify(newNoteNumbers));
+      //   return newNoteNumbers;
+      // });
     }
   };
 
@@ -360,7 +369,6 @@ function RouteComponent() {
                 sx={{
                   position: "relative",
                   width: "100%",
-                  maxWidth: 300,
                   margin: "0 auto",
                   px: 2,
                 }}
@@ -397,11 +405,7 @@ function RouteComponent() {
               data-sudoku-board
               sx={{ display: "flex", justifyContent: "center" }}
             >
-              <Grid
-                container
-                spacing={0.5}
-                sx={{ maxWidth: 360, margin: "0 auto" }}
-              >
+              <Grid container spacing={0.5} sx={{ margin: "0 auto" }}>
                 <Box
                   sx={{
                     display: "grid",
@@ -464,9 +468,12 @@ function RouteComponent() {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, 40px)",
+                gridTemplateColumns: lg
+                  ? "repeat(3, 50px)"
+                  : md
+                    ? "repeat(3, 40px)"
+                    : "repeat(3, 30px)",
                 gap: 1,
-                maxWidth: 360,
                 margin: "0 auto",
                 px: 2,
               }}

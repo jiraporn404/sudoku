@@ -7,6 +7,7 @@ import {
   Stack,
   Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -49,7 +50,9 @@ const emptyNoteNumbers = Array(9)
   );
 
 export function Sudoku({ roomId }: Props) {
-  const md = useMediaQuery("(min-width: 600px)");
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.up("md"));
+  const lg = useMediaQuery(theme.breakpoints.up("lg"));
   const [boardA, setBoardA] = useState<Cell[][]>(emptyBoard);
   const [boardB, setBoardB] = useState<Cell[][]>(emptyBoard);
   const [solutionA, setSolutionA] = useState<number[][]>([]);
@@ -78,6 +81,14 @@ export function Sudoku({ roomId }: Props) {
   const [activeNoteNumberB, setActiveNoteNumberB] = useState<string | null>(
     null
   );
+  const [isCheckA, setIsCheckA] = useState<boolean>(false);
+  const [isCheckB, setIsCheckB] = useState<boolean>(false);
+  const [correctPositionsA, setCorrectPositionsA] = useState<
+    { row: number; col: number }[]
+  >([]);
+  const [correctPositionsB, setCorrectPositionsB] = useState<
+    { row: number; col: number }[]
+  >([]);
 
   const [activeBoard, setActiveBoard] = useState<"boardA" | "boardB">(
     (localStorage.getItem("activeBoard") as "boardA" | "boardB") || "boardA"
@@ -123,6 +134,12 @@ export function Sudoku({ roomId }: Props) {
     activeBoard === boardType && setIsValidA(null);
     activeBoard === boardType && setIsValidB(null);
 
+    if (boardType === "boardA") {
+      setIsCheckA(false);
+    } else {
+      setIsCheckB(false);
+    }
+
     const board = boardType === "boardA" ? boardA : boardB;
 
     if (/^[1-9]?$/.test(value)) {
@@ -155,18 +172,18 @@ export function Sudoku({ roomId }: Props) {
           setBoardA(newBoard);
           // Debounced API call instead of immediate call
           debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
-          setNoteNumbersA((prev) => {
-            const newNoteNumbers = prev.map((rowArray, i) =>
-              rowArray.map((colArray, j) =>
-                i === row && j === col ? [] : colArray
-              )
-            );
-            localStorage.setItem(
-              "noteNumbersA",
-              JSON.stringify(newNoteNumbers)
-            );
-            return newNoteNumbers;
-          });
+          // setNoteNumbersA((prev) => {
+          //   const newNoteNumbers = prev.map((rowArray, i) =>
+          //     rowArray.map((colArray, j) =>
+          //       i === row && j === col ? [] : colArray
+          //     )
+          //   );
+          //   localStorage.setItem(
+          //     "noteNumbersA",
+          //     JSON.stringify(newNoteNumbers)
+          //   );
+          //   return newNoteNumbers;
+          // });
         }
       } else {
         if (isNoteModeB) {
@@ -197,18 +214,18 @@ export function Sudoku({ roomId }: Props) {
           setBoardB(newBoard);
           // Debounced API call instead of immediate call
           debouncedUpdateUserAnswer(roomId, boardType, row, col, value);
-          setNoteNumbersA((prev) => {
-            const newNoteNumbers = prev.map((rowArray, i) =>
-              rowArray.map((colArray, j) =>
-                i === row && j === col ? [] : colArray
-              )
-            );
-            localStorage.setItem(
-              "noteNumbersA",
-              JSON.stringify(newNoteNumbers)
-            );
-            return newNoteNumbers;
-          });
+          // setNoteNumbersA((prev) => {
+          //   const newNoteNumbers = prev.map((rowArray, i) =>
+          //     rowArray.map((colArray, j) =>
+          //       i === row && j === col ? [] : colArray
+          //     )
+          //   );
+          //   localStorage.setItem(
+          //     "noteNumbersA",
+          //     JSON.stringify(newNoteNumbers)
+          //   );
+          //   return newNoteNumbers;
+          // });
         }
       }
     }
@@ -276,8 +293,12 @@ export function Sudoku({ roomId }: Props) {
   const handleCheck = (boardType: "boardA" | "boardB") => {
     if (boardType === "boardA") {
       setIsValidA(validateSolution(boardType));
+      setIsCheckA(true);
+      setCorrectPositionsA(getCorrectPositions(boardType));
     } else {
       setIsValidB(validateSolution(boardType));
+      setIsCheckB(true);
+      setCorrectPositionsB(getCorrectPositions(boardType));
     }
   };
 
@@ -290,6 +311,29 @@ export function Sudoku({ roomId }: Props) {
     setNoteNumbersB(emptyNoteNumbers);
     localStorage.setItem("noteNumbersA", JSON.stringify(emptyNoteNumbers));
     localStorage.setItem("noteNumbersB", JSON.stringify(emptyNoteNumbers));
+    setIsCheckA(false);
+    setIsCheckB(false);
+    setCorrectPositionsA([]);
+    setCorrectPositionsB([]);
+  };
+
+  const getCorrectPositions = (boardType: "boardA" | "boardB") => {
+    const board = boardType === "boardA" ? boardA : boardB;
+    const solution = boardType === "boardA" ? solutionA : solutionB;
+
+    const correctPositions: { row: number; col: number }[] = [];
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (
+          board[row][col].value !== "" &&
+          !board[row][col].isPreFilled &&
+          Number(board[row][col].value) === solution[row][col]
+        ) {
+          correctPositions.push({ row, col });
+        }
+      }
+    }
+    return correctPositions;
   };
 
   useEffect(() => {
@@ -413,7 +457,7 @@ export function Sudoku({ roomId }: Props) {
               container
               spacing={0.5}
               sx={{
-                maxWidth: activeBoard === "boardA" ? 360 : 270,
+                // maxWidth: activeBoard === "boardA" ? 360 : 270,
                 margin: "0 auto",
               }}
             >
@@ -458,6 +502,20 @@ export function Sudoku({ roomId }: Props) {
                         }}
                         noteNumbers={noteNumbersA?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellA ?? undefined}
+                        sx={{
+                          color:
+                            activeBoard !== "boardA" && !cell.isPreFilled
+                              ? "#efe7bc"
+                              : !cell.isPreFilled &&
+                                  isCheckA &&
+                                  !correctPositionsA.some(
+                                    (pos) =>
+                                      pos.row === rowIndex &&
+                                      pos.col === colIndex
+                                  )
+                                ? "error.main"
+                                : "inherit",
+                        }}
                       />
                     </Box>
                   ))
@@ -470,9 +528,13 @@ export function Sudoku({ roomId }: Props) {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(3, 40px)",
+                  gridTemplateColumns: lg
+                    ? "repeat(3, 50px)"
+                    : md
+                      ? "repeat(3, 40px)"
+                      : "repeat(3, 30px)",
                   gap: 1,
-                  maxWidth: 360,
+                  // maxWidth: 360,
                   margin: "0 auto",
                   px: 2,
                 }}
@@ -566,6 +628,9 @@ export function Sudoku({ roomId }: Props) {
                   width: "fit-content",
                 }}
                 onClick={() => handleCheck(activeBoard)}
+                disabled={boardA.some((row) =>
+                  row.some((cell) => cell.value === "")
+                )}
               >
                 Check
               </Button>
@@ -604,17 +669,20 @@ export function Sudoku({ roomId }: Props) {
                 Help ({helpCountA ?? 0})
               </Button>
             </Box>
+            {isValidA !== null && (
+              <Typography
+                variant="subtitle2"
+                sx={{ mt: 2 }}
+                color={isValidA ? "green" : "error"}
+              >
+                {isValidA
+                  ? "✅ Correct! Well done!"
+                  : "❌ Incorrect, try again!"}
+              </Typography>
+            )}
           </>
         )}
-        {isValidA !== null && (
-          <Typography
-            variant="subtitle2"
-            sx={{ mt: 2 }}
-            color={isValidA ? "green" : "error"}
-          >
-            {isValidA ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
-          </Typography>
-        )}
+
         <Divider />
         <Stack
           direction={md ? "row" : "column"}
@@ -626,7 +694,7 @@ export function Sudoku({ roomId }: Props) {
               container
               spacing={0.5}
               sx={{
-                maxWidth: activeBoard === "boardB" ? 360 : 270,
+                // maxWidth: activeBoard === "boardB" ? 360 : 270,
                 margin: "0 auto",
               }}
             >
@@ -672,6 +740,20 @@ export function Sudoku({ roomId }: Props) {
                         }}
                         noteNumbers={noteNumbersB?.[rowIndex]?.[colIndex] ?? []}
                         selectedCell={selectedCellB ?? undefined}
+                        sx={{
+                          color:
+                            activeBoard !== "boardB" && !cell.isPreFilled
+                              ? "#efe7bc"
+                              : !cell.isPreFilled &&
+                                  isCheckB &&
+                                  !correctPositionsB.some(
+                                    (pos) =>
+                                      pos.row === rowIndex &&
+                                      pos.col === colIndex
+                                  )
+                                ? "error.main"
+                                : "inherit",
+                        }}
                       />
                     </Box>
                   ))
@@ -684,9 +766,13 @@ export function Sudoku({ roomId }: Props) {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(3, 40px)",
+                  gridTemplateColumns: lg
+                    ? "repeat(3, 50px)"
+                    : md
+                      ? "repeat(3, 40px)"
+                      : "repeat(3, 30px)",
                   gap: 1,
-                  maxWidth: 360,
+                  // maxWidth: 360,
                   margin: "0 auto",
                   px: 2,
                 }}
@@ -778,6 +864,9 @@ export function Sudoku({ roomId }: Props) {
                 color="success"
                 sx={{ width: "fit-content" }}
                 onClick={() => handleCheck(activeBoard)}
+                disabled={boardB.some((row) =>
+                  row.some((cell) => cell.value === "")
+                )}
               >
                 Check
               </Button>
@@ -816,17 +905,20 @@ export function Sudoku({ roomId }: Props) {
                 Help ({helpCountA ?? 0})
               </Button>
             </Box>
+            {isValidB !== null && (
+              <Typography
+                variant="subtitle2"
+                sx={{ mt: 2 }}
+                color={isValidB ? "green" : "error"}
+              >
+                {isValidB
+                  ? "✅ Correct! Well done!"
+                  : "❌ Incorrect, try again!"}
+              </Typography>
+            )}
           </>
         )}
-        {isValidB !== null && (
-          <Typography
-            variant="subtitle2"
-            sx={{ mt: 2 }}
-            color={isValidB ? "green" : "error"}
-          >
-            {isValidB ? "✅ Correct! Well done!" : "❌ Incorrect, try again!"}
-          </Typography>
-        )}
+
         <Divider sx={{ pb: 2 }} />
       </Stack>
     </>
