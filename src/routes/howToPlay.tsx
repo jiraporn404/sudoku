@@ -183,6 +183,16 @@ function RouteComponent() {
                 secondary="Start a fresh puzzle with the 'New Game' button. Progress is automatically saved."
               />
             </ListItem>
+
+            <ListItem>
+              <ListItemIcon>
+                <Refresh color="error" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Reset Game"
+                secondary="Reset the current puzzle to its original state. This clears all your progress and returns to the starting board."
+              />
+            </ListItem>
           </List>
         </Paper>
 
@@ -236,13 +246,13 @@ function RouteComponent() {
             </Box>
 
             <Box>
-              <Typography variant="h6" color="info" sx={{ mb: 1 }}>
-                Use Long Press for Efficiency
+              <Typography variant="h6" color="error" sx={{ mb: 1 }}>
+                When to Use Reset
               </Typography>
               <Typography variant="body1">
-                Long press (1 second) on any number to lock it. This is
-                especially useful when you need to place the same number
-                multiple times - you won't need to tap the number repeatedly.
+                Use the Reset button when you've made too many mistakes and want
+                to start over with the same puzzle. This is different from 'New
+                Game' which generates a completely new puzzle.
               </Typography>
             </Box>
           </Stack>

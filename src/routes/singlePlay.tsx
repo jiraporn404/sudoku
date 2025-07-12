@@ -10,6 +10,7 @@ import { LoadingOverlay } from "../components/LoadingOverlay";
 
 function RouteComponent() {
   const md = useMediaQuery("(min-width: 600px)");
+  const [originalBoard, setOriginalBoard] = useState<Cell[][]>(emptyBoard);
   const [board, setBoard] = useState<Cell[][]>(emptyBoard);
   const [difficulty, setDifficulty] = useState<string>("");
   const [solution, setSolution] = useState<number[][]>([]);
@@ -30,6 +31,10 @@ function RouteComponent() {
       )
   );
   const [activeNoteNumber, setActiveNoteNumber] = useState<string | null>(null);
+  const [isCheck, setIsCheck] = useState<boolean>(false);
+  const [correctPositions, setCorrectPositions] = useState<
+    { row: number; col: number }[]
+  >([]);
 
   const { mutateAsync: generateNewBoardDataAsync, isPending } = useMutation({
     mutationFn: generateNewBoardData,
@@ -42,6 +47,7 @@ function RouteComponent() {
     setDifficulty(newBoard.difficulty);
     setSolution(newBoard.solution);
     setHelpCount(5);
+    setOriginalBoard(newBoard.puzzle);
     setNoteNumbers(
       Array(9)
         .fill(null)
@@ -51,6 +57,8 @@ function RouteComponent() {
             .map(() => [])
         )
     );
+    setCorrectPositions([]);
+    setIsCheck(false);
     localStorage.setItem(
       "noteNumbers",
       JSON.stringify(
@@ -66,6 +74,7 @@ function RouteComponent() {
     localStorage.setItem(
       "board",
       JSON.stringify({
+        originalBoard: newBoard.puzzle,
         board: newBoard.puzzle,
         difficulty: newBoard.difficulty,
         solution: newBoard.solution,
@@ -77,14 +86,16 @@ function RouteComponent() {
 
   const handleChange = (row: number, col: number, value: string) => {
     setIsValid(null);
+    setCorrectPositions([]);
+    setIsCheck(false);
     if (isNoteMode) {
       setNoteNumbers((prev) => {
         const newNoteNumbers = prev.map((rowArray, i) =>
           rowArray.map((colArray, j) =>
             i === row && j === col
               ? colArray.includes(value)
-                ? colArray.filter((v: string) => v !== value) // Remove if already exists
-                : [...colArray, value] // Add if doesn't exist
+                ? colArray.filter((v: string) => v !== value)
+                : [...colArray, value]
               : colArray
           )
         );
@@ -99,6 +110,7 @@ function RouteComponent() {
       localStorage.setItem(
         "board",
         JSON.stringify({
+          originalBoard: originalBoard,
           board: newBoard,
           difficulty: difficulty,
           solution: solution,
@@ -199,6 +211,62 @@ function RouteComponent() {
 
   const handleCheck = () => {
     setIsValid(validateBoard());
+    setCorrectPositions(getCorrectPositions());
+  };
+
+  const handleReset = () => {
+    setBoard(originalBoard);
+    setIsValid(null);
+    setCorrectPositions([]);
+    setIsCheck(false);
+    setActiveNoteNumber(null);
+    localStorage.setItem(
+      "board",
+      JSON.stringify({
+        originalBoard: originalBoard,
+        board: originalBoard,
+        difficulty: difficulty,
+        solution: solution,
+        helpCount: helpCount,
+      })
+    );
+    localStorage.setItem(
+      "noteNumbers",
+      JSON.stringify(
+        Array(9)
+          .fill(null)
+          .map(() =>
+            Array(9)
+              .fill(null)
+              .map(() => [])
+          )
+      )
+    );
+    setNoteNumbers(
+      Array(9)
+        .fill(null)
+        .map(() =>
+          Array(9)
+            .fill(null)
+            .map(() => [])
+        )
+    );
+  };
+
+  const getCorrectPositions = () => {
+    const correctPositions: { row: number; col: number }[] = [];
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (
+          board[row][col].value !== "" &&
+          !board[row][col].isPreFilled &&
+          Number(board[row][col].value) === solution[row][col]
+        ) {
+          correctPositions.push({ row, col });
+        }
+      }
+    }
+    return correctPositions;
   };
 
   useEffect(() => {
@@ -216,8 +284,9 @@ function RouteComponent() {
             )
     );
     if (storageBoard) {
-      const { board, difficulty, solution, helpCount } =
+      const { board, difficulty, solution, helpCount, originalBoard } =
         JSON.parse(storageBoard);
+      setOriginalBoard(originalBoard);
       setBoard(board);
       setDifficulty(difficulty);
       setSolution(solution);
@@ -372,6 +441,17 @@ function RouteComponent() {
                             noteNumbers?.[rowIndex]?.[colIndex] ?? []
                           }
                           selectedCell={selectedCell ?? undefined}
+                          sx={{
+                            color:
+                              !cell.isPreFilled &&
+                              isCheck &&
+                              !correctPositions.some(
+                                (pos) =>
+                                  pos.row === rowIndex && pos.col === colIndex
+                              )
+                                ? "error.main"
+                                : "inherit",
+                          }}
                         />
                       </Box>
                     ))
@@ -468,6 +548,14 @@ function RouteComponent() {
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
           <Button
             variant="contained"
+            color="error"
+            sx={{ width: "fit-content" }}
+            onClick={() => handleReset()}
+          >
+            Reset
+          </Button>{" "}
+          <Button
+            variant="contained"
             color="warning"
             sx={{ width: "fit-content", color: "white" }}
             onClick={() => generateNewBoard()}
@@ -478,11 +566,13 @@ function RouteComponent() {
             variant="contained"
             color="success"
             sx={{ width: "fit-content" }}
-            onClick={() => handleCheck()}
+            onClick={() => {
+              handleCheck();
+              setIsCheck(true);
+            }}
           >
             Check
           </Button>
-
           <Button
             data-sudoku-board
             variant="outlined"

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, type SxProps } from "@mui/material";
 import React from "react";
 
 type SudokuCellProps = {
@@ -11,6 +11,7 @@ type SudokuCellProps = {
   isOwner: boolean;
   noteNumbers?: string[];
   selectedCell?: { row: number; col: number };
+  sx?: SxProps;
 };
 
 const SudokuCell = React.memo(
@@ -23,6 +24,7 @@ const SudokuCell = React.memo(
     onSelect,
     noteNumbers,
     selectedCell,
+    sx,
   }: SudokuCellProps) => {
     // const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     //   const val = e.target.value;
@@ -64,6 +66,7 @@ const SudokuCell = React.memo(
                   : "transparent",
             color: isPreFilled ? "#000000" : isOwner ? "#000000" : "#efe7bc",
             fontFamily: "Kanit",
+            ...sx,
           }}
         >
           {value}
