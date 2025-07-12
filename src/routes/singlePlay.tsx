@@ -570,6 +570,9 @@ function RouteComponent() {
               handleCheck();
               setIsCheck(true);
             }}
+            disabled={board.some((row) =>
+              row.some((cell) => cell.value === "")
+            )}
           >
             Check
           </Button>
